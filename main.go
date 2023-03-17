@@ -68,7 +68,7 @@ func run() {
     var bullets [BULLET_ALLOC_SIZE]physObj
     var bullet physObj = physObj {
         pos: pixel.Vec{0,2},
-        vel: pixel.Vec{0,10},
+        vel: pixel.Vec{0,12},
         acc: 0,
         frc: 0,
         sprite: pixel.NewSprite(bulletImage, bulletImage.Bounds()),
@@ -174,9 +174,24 @@ func createBullet(bullets *[BULLET_ALLOC_SIZE]physObj, bullet *physObj, shipPos 
         if bullets[i].loaded == false {
             bullets[i] = *bullet
             bullets[i].pos = bullets[i].pos.Add(shipPos)
+            
+            _, count := bulletsWithinRadius(bullets, bullets[i].pos, 30)
+            println(count)
             return
         }
     }
+}
+
+func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]physObj, point pixel.Vec, radius float64) ([BULLET_ALLOC_SIZE]int, int) {
+    var insideRadius [BULLET_ALLOC_SIZE]int
+    var bulletCount int = 0
+    for i:=0;i<BULLET_ALLOC_SIZE;i++ {
+        if bullets[i].pos.Sub(point).Len() < radius {
+            insideRadius[bulletCount] = i
+            bulletCount++
+        }
+    }
+    return insideRadius, bulletCount
 }
 
 // [Update states of each bullet for one frame]
