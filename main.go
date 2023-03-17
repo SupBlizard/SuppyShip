@@ -68,14 +68,12 @@ func run() {
     var frameCount uint32 = 0
     var reloadDelay uint8 = 4
     var paused bool = false
-    var lastPauseButtonState bool = false
     
 	for !win.Closed() {
         // Handle keyboard input
         inputDirection, shooting, pauseButton := handleInput(win)
         
-        if pauseButton == true && lastPauseButtonState != true {paused = !paused}
-        lastPauseButtonState = pauseButton
+        if pauseButton == true {paused = !paused}
         
         if !paused {
             frameCount++
@@ -167,7 +165,7 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
     if win.Pressed(pixelgl.KeyDown)  {dirVec = dirVec.Add(inputVec[2])}
     if win.Pressed(pixelgl.KeyRight) {dirVec = dirVec.Add(inputVec[3])}
     if win.Pressed(pixelgl.KeySpace) {shootButton = true}
-    if win.Pressed(pixelgl.KeyEscape) {pauseButton = true}
+    if win.JustPressed(pixelgl.KeyEscape) {pauseButton = true}
     
     return dirVec, shootButton, pauseButton
 }
