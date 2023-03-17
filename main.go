@@ -31,11 +31,37 @@ type physObj struct {
     vel   pixel.Vec     // velocity
     acc   float64       // acceleration
     frc   float64       // friction
-    sprite   *pixel.Sprite // sprite
-    loaded bool         // loaded
 }
 
+type projectile struct {
+    name string
+    phys physObj
+    loaded bool
+    friendly bool
+    sprite *pixel.Sprite
+}
 
+var shipBulletPhys physObj = physObj{
+    pos: pixel.Vec{0,2},
+    vel: pixel.Vec{0,12},
+    acc: 0,
+    frc: 0,
+}
+
+var projectileTypes = [8]projectile {
+    projectile {
+        name: "Bullet",
+        phys: shipBulletPhys,
+        loaded: true,
+        friendly: true,
+    },
+    projectile {
+        name: "Onyx Bullet",
+        phys: shipBulletPhys,
+        loaded: true,
+        friendly: true,
+    },
+}
 
 // Main
 func run() {
@@ -55,27 +81,22 @@ func run() {
     bulletImage, err := loadPicture("bullet.png")
 	if err != nil {panic(err)}
 	
+    var shipSprite = pixel.NewSprite(shipImage, shipImage.Bounds())
     var ship physObj = physObj {
         pos: win.Bounds().Center(),
         vel: pixel.ZV,
         acc: 1.1,
         frc: 1 - 0.08,
-        sprite: pixel.NewSprite(shipImage, shipImage.Bounds()),
-        loaded: true,
     }
      
     var reloadDelay uint8 = 4
-    var bullets [BULLET_ALLOC_SIZE]physObj
-    var bullet physObj = physObj {
-        pos: pixel.Vec{0,2},
-        vel: pixel.Vec{0,12},
-        acc: 0,
-        frc: 0,
-        sprite: pixel.NewSprite(bulletImage, bulletImage.Bounds()),
-        loaded: true,
-    }
+    var projectiles [BULLET_ALLOC_SIZE]projectile
     
-    // go bathroom
+    // This is temporary
+    projectileTypes[0].sprite = pixel.NewSprite(bulletImage, bulletImage.Bounds())
+    projectileTypes[1].sprite = pixel.NewSprite(bulletImage, bulletImage.Bounds())
+
+
     var frameCount uint32 = 0
     
     var paused bool = false
@@ -97,12 +118,12 @@ func run() {
             
             // Create new bullets
             if shooting && (frameCount % uint32(reloadDelay)) == 0 {
-                createBullet(&bullets, &bullet, ship.pos)
+                createBullet(&projectiles, ship.pos)
             }
-            updateBullets(&bullets, win)
+            updateBullets(&projectiles, win)
             
             // Draw sprites
-            ship.sprite.Draw(win, pixel.IM.Moved(ship.pos))
+            shipSprite.Draw(win, pixel.IM.Moved(ship.pos))
         }
         // Update window
 		win.Update()
@@ -168,25 +189,25 @@ func inBounds(pos pixel.Vec, max pixel.Vec, bounds [4]float64) (pixel.Vec) {
 }
 
 // [Create a bullet if a slot is free]
-func createBullet(bullets *[BULLET_ALLOC_SIZE]physObj, bullet *physObj, shipPos pixel.Vec) {
+func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
     // Loop through bullet array
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
         if bullets[i].loaded == false {
-            bullets[i] = *bullet
-            bullets[i].pos = bullets[i].pos.Add(shipPos)
+            bullets[i] = projectileTypes[0]
+            bullets[i].phys.pos = bullets[i].phys.pos.Add(shipPos)
             
-            _, count := bulletsWithinRadius(bullets, bullets[i].pos, 30)
+            _, count := bulletsWithinRadius(bullets, bullets[i].phys.pos, 30)
             println(count)
             return
         }
     }
 }
 
-func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]physObj, point pixel.Vec, radius float64) ([BULLET_ALLOC_SIZE]int, int) {
+func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]projectile, point pixel.Vec, radius float64) ([BULLET_ALLOC_SIZE]int, int) {
     var insideRadius [BULLET_ALLOC_SIZE]int
     var bulletCount int = 0
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
-        if bullets[i].pos.Sub(point).Len() < radius {
+        if bullets[i].phys.pos.Sub(point).Len() < radius {
             insideRadius[bulletCount] = i
             bulletCount++
         }
@@ -195,17 +216,17 @@ func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]physObj, point pixel.Vec, r
 }
 
 // [Update states of each bullet for one frame]
-func updateBullets(bullets *[BULLET_ALLOC_SIZE]physObj, win *pixelgl.Window) {
+func updateBullets(bullets *[BULLET_ALLOC_SIZE]projectile, win *pixelgl.Window) {
     // Update bullets
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
         if bullets[i].loaded == false {
             continue
         }
-        if inBounds(bullets[i].pos, WINSIZE, NULL_BOUNDARY_RANGE) != pixel.ZV {
+        if inBounds(bullets[i].phys.pos, WINSIZE, NULL_BOUNDARY_RANGE) != pixel.ZV {
             bullets[i].loaded = false
         } else {
-            bullets[i].pos = bullets[i].pos.Add(bullets[i].vel)
-            bullets[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(bullets[i].pos))
+            bullets[i].phys.pos = bullets[i].phys.pos.Add(bullets[i].phys.vel)
+            bullets[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(bullets[i].phys.pos))
         } 
     }
 }
