@@ -6,7 +6,8 @@ import (
 )
 
 const BULLET_ALLOC_SIZE int = 256
-const ONYX_CLUSTER_SIZE int = 7
+const ONYX_CLUSTER_REQUIREMENT int = 10
+const ONYX_CLUSTER_RADIUS float64 = 100
 
 // Projectile Allocation Array
 var projectiles [BULLET_ALLOC_SIZE]projectile
@@ -18,6 +19,7 @@ type projectile struct {
     phys physObj
     loaded bool
     friendly bool
+    scale float64
     sprite *pixel.Sprite
 }
 
@@ -34,12 +36,14 @@ var projectileTypes = [8]projectile {
         phys: shipBulletPhys,
         loaded: true,
         friendly: true,
+        scale: 4,
     },
     projectile {
         name: "Onyx Bullet",
         phys: shipBulletPhys,
         loaded: true,
         friendly: true,
+        scale: 20,
     },
 }
 
@@ -52,9 +56,8 @@ func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
             bullets[i] = projectileTypes[0]
             bullets[i].phys.pos = bullets[i].phys.pos.Add(shipPos)
             
-            indicies, count := bulletsWithinRadius(bullets, bullets[i].phys.pos, 30)
-            if count >= ONYX_CLUSTER_SIZE {
-                // TODO: create freeProjectiles function
+            indicies, count := bulletsWithinRadius(bullets, bullets[i].phys.pos, ONYX_CLUSTER_RADIUS)
+            if count >= ONYX_CLUSTER_REQUIREMENT {
                 freeProjectiles(indicies)
                 bulletPos := bullets[i].phys.pos
                 bullets[i] = projectileTypes[1]
@@ -65,12 +68,18 @@ func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
     }
 }
 
-func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]projectile, point pixel.Vec, radius float64) ([BULLET_ALLOC_SIZE]int, int) {
-    var insideRadius [BULLET_ALLOC_SIZE]int
+func freeProjectiles(bull []int) {
+    for i:=0;i<len(bull);i++ {
+        projectiles[bull[i]].loaded = false
+    }
+}
+
+func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]projectile, point pixel.Vec, radius float64) ([]int, int) {
+    var insideRadius []int
     var bulletCount int = 0
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
         if bullets[i].phys.pos.Sub(point).Len() < radius {
-            insideRadius[bulletCount] = i
+            insideRadius = append(insideRadius, i)
             bulletCount++
         }
     }
@@ -88,7 +97,7 @@ func updateBullets(bullets *[BULLET_ALLOC_SIZE]projectile, win *pixelgl.Window) 
             bullets[i].loaded = false
         } else {
             bullets[i].phys.pos = bullets[i].phys.pos.Add(bullets[i].phys.vel)
-            bullets[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(bullets[i].phys.pos))
+            bullets[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, bullets[i].scale).Moved(bullets[i].phys.pos))
         } 
     }
 }
