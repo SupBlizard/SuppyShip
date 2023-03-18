@@ -6,6 +6,7 @@ import (
 )
 
 const BULLET_ALLOC_SIZE int = 256
+const ONYX_CLUSTER_SIZE int = 7
 
 // Projectile Allocation Array
 var projectiles [BULLET_ALLOC_SIZE]projectile
@@ -51,8 +52,14 @@ func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
             bullets[i] = projectileTypes[0]
             bullets[i].phys.pos = bullets[i].phys.pos.Add(shipPos)
             
-            _, count := bulletsWithinRadius(bullets, bullets[i].phys.pos, 30)
-            println(count)
+            indicies, count := bulletsWithinRadius(bullets, bullets[i].phys.pos, 30)
+            if count >= ONYX_CLUSTER_SIZE {
+                // TODO: create freeProjectiles function
+                freeProjectiles(indicies)
+                bulletPos := bullets[i].phys.pos
+                bullets[i] = projectileTypes[1]
+                bullets[i].phys.pos = bulletPos
+            }
             return
         }
     }
