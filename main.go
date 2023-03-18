@@ -46,12 +46,19 @@ func run() {
 	if err != nil {panic(err)}
     
     // TODO: make full sprite loader
-	shipImage, err := loadPicture("ship.png")
+	shipImage, err := loadPicture("ship-spritesheet.png")
 	if err != nil {panic(err)}
     bulletImage, err := loadPicture("bullet.png")
 	if err != nil {panic(err)}
-	
-    var shipSprite = pixel.NewSprite(shipImage, shipImage.Bounds())
+    
+    // Load ship spritesheet
+    var shipSprites []*pixel.Sprite
+	for x := shipImage.Bounds().Min.X; x < shipImage.Bounds().Max.X; x += 15 {
+		for y := shipImage.Bounds().Min.Y; y < shipImage.Bounds().Max.Y; y += 18 {
+			shipSprites = append(shipSprites, pixel.NewSprite(shipImage, pixel.R(x, y, x+15, y+18)))
+        }
+	}
+
     var ship physObj = physObj {
         pos: win.Bounds().Center(),
         vel: pixel.ZV,
@@ -65,8 +72,11 @@ func run() {
     projectileTypes[1].sprite = pixel.NewSprite(bulletImage, bulletImage.Bounds())
 
 
-    var frameCount uint32 = 0
-    var reloadDelay uint8 = 4
+    var frameCount int = 0
+    var currentSprite = 0
+    var reloadDelay int = 4
+    var spriteAlter bool = false
+    var spriteAlterSpeed int = 5
     var paused bool = false
     
 	for !win.Closed() {
@@ -83,13 +93,25 @@ func run() {
             ship = updateShip(ship, inputDirection)
             
             // Create new bullets
-            if shooting && (frameCount % uint32(reloadDelay)) == 0 {
+            if shooting && (frameCount % reloadDelay) == 0 {
                 createBullet(&projectiles, ship.pos)
             }
             updateBullets(&projectiles, win)
             
             // Draw sprites
-            shipSprite.Draw(win, pixel.IM.Moved(ship.pos))
+            currentSprite = 0
+            if inputDirection.X != 0 {
+                if ship.vel.X > 0 {
+                    currentSprite = 4
+                } else {
+                    currentSprite = 2
+                }
+            }
+            
+            if frameCount % spriteAlterSpeed == 0 {spriteAlter = !spriteAlter}
+            if spriteAlter {currentSprite++}
+
+            shipSprites[currentSprite].Draw(win, pixel.IM.Scaled(pixel.ZV, 2.3).Moved(ship.pos))
         }
         // Update window
 		win.Update()
