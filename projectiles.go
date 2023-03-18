@@ -6,8 +6,8 @@ import (
 )
 
 const BULLET_ALLOC_SIZE int = 256
-const ONYX_CLUSTER_REQUIREMENT int = 10
-const ONYX_CLUSTER_RADIUS float64 = 100
+const ONYX_CLUSTER_REQUIREMENT int = 6
+const ONYX_CLUSTER_RADIUS float64 = 50
 
 // Projectile Allocation Array
 var projectiles [BULLET_ALLOC_SIZE]projectile
@@ -78,7 +78,7 @@ func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]projectile, point pixel.Vec
     var insideRadius []int
     var bulletCount int = 0
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
-        if bullets[i].phys.pos.Sub(point).Len() < radius {
+        if bullets[i].loaded && bullets[i].phys.pos.Sub(point).Len() < radius {
             insideRadius = append(insideRadius, i)
             bulletCount++
         }
