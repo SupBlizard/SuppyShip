@@ -6,8 +6,11 @@ import (
 )
 
 const BULLET_ALLOC_SIZE int = 256
-const ONYX_CLUSTER_REQUIREMENT int = 6
-const ONYX_CLUSTER_RADIUS float64 = 50
+const ONYX_CLUSTER_REQUIREMENT int = 7
+const ONYX_CLUSTER_RADIUS float64 = 30
+const ONYX_COOLDOWN int = 60
+var reloadDelay int = 4
+var gunCooldown = 0
 
 // Projectile Allocation Array
 var projectiles [BULLET_ALLOC_SIZE]projectile
@@ -62,6 +65,8 @@ func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
                 bulletPos := bullets[i].phys.pos
                 bullets[i] = projectileTypes[1]
                 bullets[i].phys.pos = bulletPos
+                
+                gunCooldown = ONYX_COOLDOWN
             }
             return
         }

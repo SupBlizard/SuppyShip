@@ -74,7 +74,6 @@ func run() {
 
     var frameCount int = 0
     var currentSprite = 0
-    var reloadDelay int = 4
     var spriteAlter bool = false
     var spriteAlterSpeed int = 5
     var paused bool = false
@@ -93,9 +92,10 @@ func run() {
             ship = updateShip(ship, inputDirection)
             
             // Create new bullets
-            if shooting && (frameCount % reloadDelay) == 0 {
+            if shooting && gunCooldown == 0 && (frameCount % reloadDelay) == 0 {
                 createBullet(&projectiles, ship.pos)
             }
+            if gunCooldown > 0 {gunCooldown--}
             updateBullets(&projectiles, win)
             
             // Draw sprites
