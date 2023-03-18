@@ -53,9 +53,9 @@ func run() {
     
     // Load ship spritesheet
     var shipSprites []*pixel.Sprite
-	for x := shipImage.Bounds().Min.X; x < shipImage.Bounds().Max.X; x += 15 {
+	for x := shipImage.Bounds().Min.X; x < shipImage.Bounds().Max.X; x += 13 {
 		for y := shipImage.Bounds().Min.Y; y < shipImage.Bounds().Max.Y; y += 18 {
-			shipSprites = append(shipSprites, pixel.NewSprite(shipImage, pixel.R(x, y, x+15, y+18)))
+			shipSprites = append(shipSprites, pixel.NewSprite(shipImage, pixel.R(x, y, x+13, y+18)))
         }
 	}
 
@@ -93,10 +93,10 @@ func run() {
             
             // Create new bullets
             if shooting && gunCooldown == 0 && (frameCount % reloadDelay) == 0 {
-                createBullet(&projectiles, ship.pos)
+                createBullet(ship.pos)
             }
             if gunCooldown > 0 {gunCooldown--}
-            updateBullets(&projectiles, win)
+            updateBullets(win)
             
             // Draw sprites
             currentSprite = 0

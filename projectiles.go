@@ -33,7 +33,7 @@ var shipBulletPhys physObj = physObj{
     frc: 0,
 }
 
-var projectileTypes = [8]projectile {
+var projectileTypes = []projectile {
     projectile {
         name: "Bullet",
         phys: shipBulletPhys,
@@ -52,19 +52,18 @@ var projectileTypes = [8]projectile {
 
 
 // [Create a bullet if a slot is free]
-func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
-    // Loop through bullet array
+func createBullet(shipPos pixel.Vec) {
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
-        if bullets[i].loaded == false {
-            bullets[i] = projectileTypes[0]
-            bullets[i].phys.pos = bullets[i].phys.pos.Add(shipPos)
+        if projectiles[i].loaded == false {
+            projectiles[i] = projectileTypes[0]
+            projectiles[i].phys.pos = projectiles[i].phys.pos.Add(shipPos)
             
-            indicies, count := bulletsWithinRadius(bullets, bullets[i].phys.pos, ONYX_CLUSTER_RADIUS)
+            indicies, count := bulletsWithinRadius(projectiles[i].phys.pos, ONYX_CLUSTER_RADIUS)
             if count >= ONYX_CLUSTER_REQUIREMENT {
-                freeProjectiles(indicies)
-                bulletPos := bullets[i].phys.pos
-                bullets[i] = projectileTypes[1]
-                bullets[i].phys.pos = bulletPos
+                unloadProjectiles(indicies)
+                bulletPos := projectiles[i].phys.pos
+                projectiles[i] = projectileTypes[1]
+                projectiles[i].phys.pos = bulletPos
                 
                 gunCooldown = ONYX_COOLDOWN
             }
@@ -73,36 +72,38 @@ func createBullet(bullets *[BULLET_ALLOC_SIZE]projectile, shipPos pixel.Vec) {
     }
 }
 
-func freeProjectiles(bull []int) {
-    for i:=0;i<len(bull);i++ {
-        projectiles[bull[i]].loaded = false
+// [Unload all selected projectiles]
+func unloadProjectiles(selected []int) {
+    for i:=0;i<len(selected);i++ {
+        projectiles[selected[i]].loaded = false
     }
 }
 
-func bulletsWithinRadius(bullets *[BULLET_ALLOC_SIZE]projectile, point pixel.Vec, radius float64) ([]int, int) {
+// [Return all of the bullets within a certain radius around a point]
+func bulletsWithinRadius(point pixel.Vec, radius float64) ([]int, int) {
     var insideRadius []int
-    var bulletCount int = 0
+    var projectileCount int = 0
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
-        if bullets[i].loaded && bullets[i].phys.pos.Sub(point).Len() < radius {
+        if projectiles[i].loaded && projectiles[i].phys.pos.Sub(point).Len() < radius {
             insideRadius = append(insideRadius, i)
-            bulletCount++
+            projectileCount++
         }
     }
-    return insideRadius, bulletCount
+    return insideRadius, projectileCount
 }
 
-// [Update states of each bullet for one frame]
-func updateBullets(bullets *[BULLET_ALLOC_SIZE]projectile, win *pixelgl.Window) {
+// [Update the state of each bullet for one frame]
+func updateBullets(win *pixelgl.Window) {
     // Update bullets
     for i:=0;i<BULLET_ALLOC_SIZE;i++ {
-        if bullets[i].loaded == false {
+        if projectiles[i].loaded == false {
             continue
         }
-        if inBounds(bullets[i].phys.pos, WINSIZE, NULL_BOUNDARY_RANGE) != pixel.ZV {
-            bullets[i].loaded = false
+        if inBounds(projectiles[i].phys.pos, WINSIZE, NULL_BOUNDARY_RANGE) != pixel.ZV {
+            projectiles[i].loaded = false
         } else {
-            bullets[i].phys.pos = bullets[i].phys.pos.Add(bullets[i].phys.vel)
-            bullets[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, bullets[i].scale).Moved(bullets[i].phys.pos))
+            projectiles[i].phys.pos = projectiles[i].phys.pos.Add(projectiles[i].phys.vel)
+            projectiles[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, projectiles[i].scale).Moved(projectiles[i].phys.pos))
         } 
     }
 }
