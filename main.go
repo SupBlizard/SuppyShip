@@ -1,11 +1,6 @@
 package main
 
 import (
-	"image"
-	"os"
-
-	_ "image/png"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -16,6 +11,9 @@ var WINSIZE pixel.Vec = pixel.Vec{500,700}
 const BOUNDARY_STRENGTH float64 = 2
 var BOUNDARY_RANGE =       [4]float64 {300,100,70,70,} // Top Bottom Right Left
 var NULL_BOUNDARY_RANGE =  [4]float64 {0,0,0,0,}
+
+// Frame counter
+var frameCount int
 
 // Input direction vector lookup table
 var inputVec = [4]pixel.Vec {
@@ -33,6 +31,11 @@ type physObj struct {
     frc   float64       // friction
 }
 
+type player struct {
+    phys physObj
+    sprite spriteSheet
+}
+
 // Main
 func run() {
 	cfg := pixelgl.WindowConfig{
@@ -42,76 +45,56 @@ func run() {
 	}
 	
 	// Create new window
-	win, err := pixelgl.NewWindow(cfg)
+	windowPointer, err := pixelgl.NewWindow(cfg)
+	win = windowPointer
 	if err != nil {panic(err)}
     
-    // TODO: make full sprite loader
-	shipImage, err := loadPicture("ship-spritesheet.png")
-	if err != nil {panic(err)}
-    bulletImage, err := loadPicture("bullet.png")
-	if err != nil {panic(err)}
-    
-    // Load ship spritesheet
-    var shipSprites []*pixel.Sprite
-	for x := shipImage.Bounds().Min.X; x < shipImage.Bounds().Max.X; x += 13 {
-		for y := shipImage.Bounds().Min.Y; y < shipImage.Bounds().Max.Y; y += 18 {
-			shipSprites = append(shipSprites, pixel.NewSprite(shipImage, pixel.R(x, y, x+13, y+18)))
-        }
-	}
-
-    var ship physObj = physObj {
-        pos: win.Bounds().Center(),
-        vel: pixel.ZV,
-        acc: 1.1,
-        frc: 1 - 0.08,
+    // Initialize player ship
+    ship := player {
+        phys: physObj {
+            pos: win.Bounds().Center(),
+            vel: pixel.ZV,
+            acc: 1.1,
+            frc: 1 - 0.08,
+        },
+        sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.Vec{13,18}, 2.3),
     }
-     
     
-    // This is temporary
-    projectileTypes[0].sprite = pixel.NewSprite(bulletImage, bulletImage.Bounds())
-    projectileTypes[1].sprite = pixel.NewSprite(bulletImage, bulletImage.Bounds())
-
-
-    var frameCount int = 0
-    var currentSprite = 0
-    var spriteAlter bool = false
-    var spriteAlterSpeed int = 5
+    
     var paused bool = false
+    // var starFrame int = 0
     
 	for !win.Closed() {
         // Handle keyboard input
         inputDirection, shooting, pauseButton := handleInput(win)
-        
         if pauseButton == true {paused = !paused}
         
         if !paused {
             frameCount++
             win.Clear(colornames.Black)
+
             
             // Update ship
-            ship = updateShip(ship, inputDirection)
+            ship.phys = updateShipPhys(ship.phys, inputDirection)
             
             // Create new bullets
             if shooting && gunCooldown == 0 && (frameCount % reloadDelay) == 0 {
-                createBullet(ship.pos)
+                createBullet(ship.phys.pos)
             }
             if gunCooldown > 0 {gunCooldown--}
-            updateBullets(win)
+            updateBullets(win)     
             
-            // Draw sprites
-            currentSprite = 0
+            // Change ship direction sprite
+            ship.sprite.current = 0
             if inputDirection.X != 0 {
-                if ship.vel.X > 0 {
-                    currentSprite = 4
+                if ship.phys.vel.X > 0 {
+                    ship.sprite.current = 2
                 } else {
-                    currentSprite = 2
+                    ship.sprite.current = 1
                 }
-            }
+            }                   
             
-            if frameCount % spriteAlterSpeed == 0 {spriteAlter = !spriteAlter}
-            if spriteAlter {currentSprite++}
-
-            shipSprites[currentSprite].Draw(win, pixel.IM.Scaled(pixel.ZV, 2.3).Moved(ship.pos))
+            drawSprite(&ship.sprite, ship.phys.pos)
         }
         // Update window
 		win.Update()
@@ -120,7 +103,7 @@ func run() {
 
 
 // [Update the ship velocity and position]
-func updateShip(ship physObj, inputDirection pixel.Vec) (physObj) {
+func updateShipPhys(ship physObj, inputDirection pixel.Vec) (physObj) {
     // Give velocity a minimum limit or apply friction to the velocity if there is any
     if ship.vel.Len() <= 0.01 {
         ship.vel = pixel.ZV
@@ -190,18 +173,6 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
     if win.JustPressed(pixelgl.KeyEscape) {pauseButton = true}
     
     return dirVec, shootButton, pauseButton
-}
-
-// [Load a picture from a path]
-func loadPicture(path string) (pixel.Picture, error) {
-	file, err := os.Open(path)
-	if err != nil {return nil, err}
-	defer file.Close()
-	
-	img, _, err := image.Decode(file)
-	if err != nil {return nil, err}
-	
-	return pixel.PictureDataFromImage(img), nil
 }
 
 // Lonely Main Function :(
