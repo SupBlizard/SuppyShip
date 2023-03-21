@@ -22,8 +22,7 @@ type projectile struct {
     phys physObj
     loaded bool
     friendly bool
-    scale float64
-    sprite *pixel.Sprite
+    sprite spriteSheet
 }
 
 var shipBulletPhys physObj = physObj{
@@ -39,14 +38,18 @@ var projectileTypes = []projectile {
         phys: shipBulletPhys,
         loaded: true,
         friendly: true,
-        scale: 4,
     },
     projectile {
         name: "Onyx Bullet",
         phys: shipBulletPhys,
         loaded: true,
         friendly: true,
-        scale: 20,
+    },
+    projectile {
+        name: "Debris",
+        phys: shipBulletPhys,
+        loaded: true,
+        friendly: false,
     },
 }
 
@@ -103,7 +106,9 @@ func updateBullets(win *pixelgl.Window) {
             projectiles[i].loaded = false
         } else {
             projectiles[i].phys.pos = projectiles[i].phys.pos.Add(projectiles[i].phys.vel)
-            projectiles[i].sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, projectiles[i].scale).Moved(projectiles[i].phys.pos))
+            
+            // Draw projectile
+            drawSprite(&projectiles[i].sprite, projectiles[i].phys.pos)
         } 
     }
 }
