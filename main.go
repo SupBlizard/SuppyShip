@@ -75,15 +75,18 @@ func run() {
 	// var starFrame int = 0
 
 	for !win.Closed() {
-		// Handle keyboard input
-		inputDirection, shooting, pauseButton := handleInput(win)
-		if pauseButton {
+
+		// Handle pause button
+		if win.JustPressed(pixelgl.KeyEscape) {
 			paused = !paused
 		}
 
 		if !paused {
 			frameCount++
 			win.Clear(colornames.Black)
+
+			// Handle input
+			inputDirection, shooting := handleInput(win)
 
 			// Update ship
 			ship.phys = updateShipPhys(ship.phys, inputDirection)
@@ -174,10 +177,9 @@ func inBounds(pos pixel.Vec, max pixel.Vec, bounds [4]float64) pixel.Vec {
 }
 
 // Handle user input for a single frame
-func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
+func handleInput(win *pixelgl.Window) (pixel.Vec, bool) {
 	var dirVec pixel.Vec = pixel.ZV
 	var shootButton bool = false
-	var pauseButton bool = false
 
 	// Movement keys
 	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
@@ -197,11 +199,8 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
 	if win.Pressed(pixelgl.KeySpace) {
 		shootButton = true
 	}
-	if win.JustPressed(pixelgl.KeyEscape) {
-		pauseButton = true
-	}
 
-	return dirVec, shootButton, pauseButton
+	return dirVec, shootButton
 }
 
 // Lonely Main Function :(
