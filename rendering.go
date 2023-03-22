@@ -61,7 +61,6 @@ func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64) spri
 	}
 
 	sprite.alterOffset = counter / 2
-	println(counter)
 	return sprite
 }
 

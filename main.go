@@ -7,14 +7,11 @@ import (
 )
 
 // Globals
-var WINSIZE pixel.Vec = pixel.V(500, 700)
-
 const BOUNDARY_STRENGTH float64 = 2
 
+var WINSIZE pixel.Vec = pixel.V(500, 700)
 var BOUNDARY_RANGE = [4]float64{300, 100, 70, 70} // Top Bottom Right Left
 var NULL_BOUNDARY_RANGE = [4]float64{0, 0, 0, 0}
-
-// Frame counter
 var frameCount int
 
 // Input direction vector lookup table
@@ -110,7 +107,7 @@ func run() {
 	}
 }
 
-// [Update the ship velocity and position]
+// Update the ship velocity and position
 func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	// Give velocity a minimum limit or apply friction to the velocity if there is any
 	if ship.vel.Len() <= 0.01 {
@@ -147,12 +144,12 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	return ship
 }
 
-// [Border force formula]
+// Border force formula
 func borderForce(acc float64, boundaryRange float64, pos float64) float64 {
 	return acc * BOUNDARY_STRENGTH * (1 - pos/boundaryRange)
 }
 
-// [Check if pos is in bounds]
+// Check if pos is in bounds
 func inBounds(pos pixel.Vec, max pixel.Vec, bounds [4]float64) pixel.Vec {
 	var boundCollision pixel.Vec = pixel.ZV
 	if pos.Y >= max.Y-bounds[0] {
@@ -169,24 +166,27 @@ func inBounds(pos pixel.Vec, max pixel.Vec, bounds [4]float64) pixel.Vec {
 	return boundCollision
 }
 
-// [Handle user input for a single frame]
+// Handle user input for a single frame
 func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
 	var dirVec pixel.Vec = pixel.ZV
 	var shootButton bool = false
 	var pauseButton bool = false
 
-	if win.Pressed(pixelgl.KeyUp) {
+	// Movement keys
+	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
 		dirVec = dirVec.Add(inputVec[0])
 	}
-	if win.Pressed(pixelgl.KeyLeft) {
+	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
 		dirVec = dirVec.Add(inputVec[1])
 	}
-	if win.Pressed(pixelgl.KeyDown) {
+	if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyS) {
 		dirVec = dirVec.Add(inputVec[2])
 	}
-	if win.Pressed(pixelgl.KeyRight) {
+	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyD) {
 		dirVec = dirVec.Add(inputVec[3])
 	}
+
+	// Misc keys
 	if win.Pressed(pixelgl.KeySpace) {
 		shootButton = true
 	}
