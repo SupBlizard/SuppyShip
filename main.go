@@ -37,10 +37,17 @@ type player struct {
 
 // Main
 func run() {
+	icon, err := loadPicture("assets/icon.png")
+	if err != nil {
+		panic(err)
+	}
+	var iconArr []pixel.Picture = []pixel.Picture{icon}
+
 	cfg := pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
 		Bounds: pixel.R(0, 0, WINSIZE.X, WINSIZE.Y),
 		VSync:  true,
+		Icon:   iconArr,
 	}
 
 	// Create new window
