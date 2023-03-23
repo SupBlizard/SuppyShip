@@ -8,6 +8,7 @@ import (
 
 // Globals
 const BOUNDARY_STRENGTH float64 = 2
+const AXIS_LOWERBOUND float64 = 0.1
 
 var WINSIZE pixel.Vec = pixel.V(500, 700)
 var BOUNDARY_RANGE = [4]float64{300, 100, 70, 70} // Top Bottom Right Left
@@ -72,12 +73,10 @@ func run() {
 	loadProjectileSprites()
 
 	var paused bool = false
-	// var starFrame int = 0
-
 	for !win.Closed() {
 
 		// Handle pause button
-		if win.JustPressed(pixelgl.KeyEscape) {
+		if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
 			paused = !paused
 		}
 
@@ -128,7 +127,8 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 
 	// Add new velocity if there is input
 	if inputDirection != pixel.ZV {
-		ship.vel = ship.vel.Add(inputDirection.Scaled(ship.acc / inputDirection.Len()))
+		//.Scaled(ship.acc / inputDirection.Len())
+		ship.vel = ship.vel.Add(inputDirection)
 	}
 
 	// Enforce soft boundary on ship
@@ -181,23 +181,42 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool) {
 	var dirVec pixel.Vec = pixel.ZV
 	var shootButton bool = false
 
-	// Movement keys
-	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
-		dirVec = dirVec.Add(inputVec[0])
-	}
-	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
-		dirVec = dirVec.Add(inputVec[1])
-	}
-	if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyS) {
-		dirVec = dirVec.Add(inputVec[2])
-	}
-	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyD) {
-		dirVec = dirVec.Add(inputVec[3])
-	}
+	if win.JoystickPresent(pixelgl.Joystick1) {
+		// Add gamepad axis positions to the direction vector
+		dirVec.X = win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftX)
+		dirVec.Y = win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftY) * -1
 
-	// Misc keys
-	if win.Pressed(pixelgl.KeySpace) {
-		shootButton = true
+		// Ignore very small values from axes as they could be slight stick drift
+		if dirVec.X < AXIS_LOWERBOUND && dirVec.X > AXIS_LOWERBOUND*-1 {
+			dirVec.X = 0
+		}
+		if dirVec.Y < AXIS_LOWERBOUND && dirVec.Y > AXIS_LOWERBOUND*-1 {
+			dirVec.Y = 0
+		}
+
+		// Shoot
+		if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonA) {
+			shootButton = true
+		}
+	} else {
+		// Add input vectors to the direction vector
+		if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
+			dirVec = dirVec.Add(inputVec[0])
+		}
+		if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
+			dirVec = dirVec.Add(inputVec[1])
+		}
+		if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyS) {
+			dirVec = dirVec.Add(inputVec[2])
+		}
+		if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyD) {
+			dirVec = dirVec.Add(inputVec[3])
+		}
+
+		// Shoot
+		if win.Pressed(pixelgl.KeySpace) {
+			shootButton = true
+		}
 	}
 
 	return dirVec, shootButton
