@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -38,11 +41,9 @@ type player struct {
 
 // Main
 func run() {
-	icon, err := loadPicture("assets/icon.png")
-	if err != nil {
-		panic(err)
-	}
-	var iconArr []pixel.Picture = []pixel.Picture{icon}
+	icon := loadPicture("assets/icon.png")
+
+	var iconArr = []pixel.Picture{icon}
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
@@ -71,9 +72,12 @@ func run() {
 
 	// Load projectile sprites
 	loadProjectileSprites()
-
+	var second = time.Tick(time.Second)
+	var framesASecond = 0
 	var paused bool = false
 	for !win.Closed() {
+		// Must be on the top OR ELSE (divide by 0 error)
+		frameCount++
 
 		// Handle pause button
 		if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
@@ -81,7 +85,6 @@ func run() {
 		}
 
 		if !paused {
-			frameCount++
 			win.Clear(colornames.Black)
 
 			// Handle input
@@ -110,9 +113,20 @@ func run() {
 			}
 
 			drawSprite(&ship.sprite, ship.phys.pos)
+
+		}
+
+		// Just for testing
+		framesASecond++
+		select {
+		case <-second:
+			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, framesASecond))
+			framesASecond = 0
+		default:
 		}
 		// Update window
 		win.Update()
+
 	}
 }
 
