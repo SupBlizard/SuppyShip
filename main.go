@@ -70,15 +70,13 @@ func run() {
 		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 2),
 	}
 
-	// Load projectile sprites
-	loadProjectileSprites()
+	// Load projectile sprite positions
+	loadProjectileSpritePos()
+
 	var second = time.Tick(time.Second)
 	var framesASecond = 0
 	var paused bool = false
 	for !win.Closed() {
-		// Must be on the top OR ELSE (divide by 0 error)
-		frameCount++
-
 		// Handle pause button
 		if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
 			paused = !paused
@@ -93,15 +91,6 @@ func run() {
 			// Update ship
 			ship.phys = updateShipPhys(ship.phys, inputDirection)
 
-			// Create new bullets
-			if shooting && gunCooldown == 0 && (frameCount%reloadDelay) == 0 {
-				createBullet(ship.phys.pos)
-			}
-			if gunCooldown > 0 {
-				gunCooldown--
-			}
-			updateBullets()
-
 			// Change ship direction sprite
 			ship.sprite.current = 0
 			if inputDirection.X != 0 {
@@ -112,8 +101,16 @@ func run() {
 				}
 			}
 
-			drawSprite(&ship.sprite, ship.phys.pos)
+			// Create new bullets
+			if shooting && gunCooldown == 0 && skipFrames(reloadDelay) {
+				createBullet(ship.phys.pos)
+			}
+			// Update Projectiles
+			updateProjectiles()
 
+			// Draw ship
+			drawSprite(&ship.sprite, ship.phys.pos)
+			frameCount++
 		}
 
 		// Just for testing
@@ -146,7 +143,7 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	}
 
 	// Enforce soft boundary on ship
-	boundsCollisions := inBounds(ship.pos, WINSIZE, BOUNDARY_RANGE)
+	boundsCollisions := inBounds(ship.pos, BOUNDARY_RANGE)
 	if boundsCollisions != pixel.ZV {
 		if boundsCollisions.Y == 1 {
 			ship.vel.Y -= borderForce(ship.acc, BOUNDARY_RANGE[0], WINSIZE.Y-ship.pos.Y)
@@ -174,16 +171,16 @@ func borderForce(acc float64, boundaryRange float64, pos float64) float64 {
 }
 
 // Check if pos is in bounds
-func inBounds(pos pixel.Vec, max pixel.Vec, bounds [4]float64) pixel.Vec {
+func inBounds(pos pixel.Vec, boundaryRange [4]float64) pixel.Vec {
 	var boundCollision pixel.Vec = pixel.ZV
-	if pos.Y >= max.Y-bounds[0] {
+	if pos.Y >= WINSIZE.Y-boundaryRange[0] {
 		boundCollision.Y = 1
-	} else if pos.Y <= bounds[1] {
+	} else if pos.Y <= boundaryRange[1] {
 		boundCollision.Y = -1
 	}
-	if pos.X >= max.X-bounds[2] {
+	if pos.X >= WINSIZE.X-boundaryRange[2] {
 		boundCollision.X = 1
-	} else if pos.X <= bounds[3] {
+	} else if pos.X <= boundaryRange[3] {
 		boundCollision.X = -1
 	}
 
@@ -234,6 +231,10 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool) {
 	}
 
 	return dirVec, shootButton
+}
+
+func skipFrames(skip int) bool {
+	return frameCount%skip == 0
 }
 
 // Lonely Main Function :(
