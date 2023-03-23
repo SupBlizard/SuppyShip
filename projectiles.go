@@ -15,16 +15,21 @@ var gunCooldown = 0
 // Projectile Allocation Array
 var projectiles [BULLET_ALLOC_SIZE]projectile
 
+// Projectile Rendering related
+var projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
+var projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
+var projSprSize pixel.Vec = pixel.V(6, 16)
+
 // Structs
 type projectile struct {
-	name        string
-	phys        physObj
-	loaded      bool
-	friendly    bool
-	isAltered   bool
-	cycleSpeed  int
-	scale       float64
-	spritesheet [2]*pixel.Sprite
+	name       string
+	phys       physObj
+	loaded     bool
+	friendly   bool
+	isAltered  uint8
+	cycleSpeed int
+	scale      float64
+	spritesPos [2]pixel.Rect
 }
 
 var shipBulletPhys physObj = physObj{
@@ -40,7 +45,7 @@ var projectileTypes = [4]projectile{
 		phys:       shipBulletPhys,
 		loaded:     true,
 		friendly:   true,
-		isAltered:  false,
+		isAltered:  0,
 		cycleSpeed: 15,
 		scale:      1,
 	},
@@ -49,7 +54,7 @@ var projectileTypes = [4]projectile{
 		phys:       shipBulletPhys,
 		loaded:     true,
 		friendly:   true,
-		isAltered:  false,
+		isAltered:  0,
 		cycleSpeed: 15,
 		scale:      3,
 	},
@@ -58,10 +63,18 @@ var projectileTypes = [4]projectile{
 		phys:       shipBulletPhys,
 		loaded:     true,
 		friendly:   false,
-		isAltered:  false,
+		isAltered:  0,
 		cycleSpeed: 15,
 		scale:      4,
 	},
+}
+
+func loadProjectileSpritePos() {
+	for y := projectileSheet.Bounds().Min.Y; y < projectileSheet.Bounds().Max.Y; y += projSprSize.Y {
+		for x := projectileSheet.Bounds().Min.X; x < projectileSheet.Bounds().Max.X; x += projSprSize.X {
+			projectileTypes[int(y/projSprSize.Y)].spritesPos[int(x/projSprSize.X)] = pixel.R(x, y, x+projSprSize.X, y+projSprSize.Y)
+		}
+	}
 }
 
 // [Create a bullet if a slot is free]
@@ -117,35 +130,33 @@ func updateBullets() {
 		} else {
 			projectiles[i].phys.pos = projectiles[i].phys.pos.Add(projectiles[i].phys.vel)
 
-			// Draw projectile
-			drawProjectile(projectiles[i])
 		}
 	}
+
+	// Draw projectiles
+	drawProjectiles()
 }
 
-func drawProjectile(proj projectile) {
-	if frameCount%proj.cycleSpeed == 0 {
-		proj.isAltered = !proj.isAltered
-	}
+func drawProjectiles() {
 
-	spriteIndex := 0
-	if proj.isAltered {
-		spriteIndex = 1
-	}
-	proj.spritesheet[spriteIndex].Draw(win, pixel.IM.Scaled(pixel.ZV, proj.scale).Moved(proj.phys.pos))
-}
-
-func loadProjectileSprites() {
-	size := pixel.V(6, 16)
-	img, err := loadPicture("assets/projectile-spritesheet.png")
-	if err != nil {
-		panic(err)
-	}
-
-	// set to min after
-	for y := 0.0; y < img.Bounds().Max.Y; y += size.Y {
-		for x := 0.0; x < img.Bounds().Max.X; x += size.X {
-			projectileTypes[int(y/size.Y)].spritesheet[int(x/size.X)] = pixel.NewSprite(img, pixel.R(x, y, x+size.X, y+size.Y))
+	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
+		if !projectiles[i].loaded {
+			continue
 		}
+
+		if frameCount%projectiles[i].cycleSpeed == 0 {
+			if projectiles[i].isAltered == 0 {
+				projectiles[i].isAltered = 1
+			} else {
+				projectiles[i].isAltered = 0
+			}
+		}
+
+		projectile := pixel.NewSprite(projectileSheet, projectiles[i].spritesPos[projectiles[0].isAltered])
+		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].scale).Moved(projectiles[i].phys.pos))
 	}
+
+	// Draw all projectiles
+	projectileBatch.Draw(win)
+	projectileBatch.Clear()
 }
