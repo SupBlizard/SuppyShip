@@ -38,10 +38,8 @@ func drawSprite(sprite *spriteSheet, pos pixel.Vec) {
 
 // Load a spritesheet and return it
 func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64) spriteSheet {
-	image, err := loadPicture(imagePath)
-	if err != nil {
-		panic(err)
-	}
+	image := loadPicture(imagePath)
+
 	sprite := spriteSheet{
 		scale:       scale,
 		bounds:      image.Bounds(),
@@ -65,17 +63,17 @@ func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64) spri
 }
 
 // Load a picture from a path
-func loadPicture(path string) (pixel.Picture, error) {
+func loadPicture(path string) pixel.Picture {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	defer file.Close()
 
 	img, _, err := image.Decode(file)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return pixel.PictureDataFromImage(img), nil
+	return pixel.PictureDataFromImage(img)
 }
