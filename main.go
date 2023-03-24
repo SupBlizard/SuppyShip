@@ -159,7 +159,6 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 
 	// Add new velocity if there is input
 	if inputDirection != pixel.ZV {
-		//.Scaled(ship.acc / inputDirection.Len())
 		ship.vel = ship.vel.Add(inputDirection)
 	}
 
@@ -212,18 +211,15 @@ func inBounds(pos pixel.Vec, boundaryRange [4]float64) pixel.Vec {
 func handleInput(win *pixelgl.Window) (pixel.Vec, bool) {
 	var dirVec pixel.Vec = pixel.ZV
 	var shootButton bool = false
+	var dirVecLen float64
 
 	if win.JoystickPresent(pixelgl.Joystick1) {
 		// Add gamepad axis positions to the direction vector
 		dirVec.X = win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftX)
 		dirVec.Y = win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftY) * -1
-
-		// Ignore very small values from axes as they could be slight stick drift
-		if dirVec.X < AXIS_LOWERBOUND && dirVec.X > AXIS_LOWERBOUND*-1 {
-			dirVec.X = 0
-		}
-		if dirVec.Y < AXIS_LOWERBOUND && dirVec.Y > AXIS_LOWERBOUND*-1 {
-			dirVec.Y = 0
+		dirVecLen = dirVec.Len()
+		if dirVecLen < AXIS_LOWERBOUND {
+			dirVec = pixel.ZV
 		}
 
 		// Shoot
@@ -245,10 +241,16 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool) {
 			dirVec = dirVec.Add(inputVec[3])
 		}
 
+		dirVecLen = dirVec.Len()
+
 		// Shoot
 		if win.Pressed(pixelgl.KeySpace) {
 			shootButton = true
 		}
+	}
+
+	if dirVecLen > 1 {
+		dirVec = dirVec.Scaled(1 / dirVecLen)
 	}
 
 	return dirVec, shootButton
