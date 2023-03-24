@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"image/color"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"golang.org/x/image/colornames"
+	"github.com/faiface/pixel/text"
+	"golang.org/x/image/font/basicfont"
 )
 
 // Globals
@@ -17,6 +18,8 @@ var WINSIZE pixel.Vec = pixel.V(500, 700)
 var BOUNDARY_RANGE = [4]float64{300, 100, 70, 70} // Top Bottom Right Left
 var NULL_BOUNDARY_RANGE = [4]float64{0, 0, 0, 0}
 var frameCount int
+
+var currentLevel uint8 = 0
 
 // Input direction vector lookup table
 var inputVec = [4]pixel.Vec{
@@ -42,10 +45,8 @@ type player struct {
 // Main
 func run() {
 	icon := loadPicture("assets/icon.png")
-
 	var iconArr = []pixel.Picture{icon}
-
-	cfg := pixelgl.WindowConfig{
+	var cfg = pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
 		Bounds: pixel.R(0, 0, WINSIZE.X, WINSIZE.Y),
 		VSync:  true,
@@ -58,6 +59,9 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
+
+	// Load text atlas
+	var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 	// Initialize player ship
 	ship := player{
@@ -73,17 +77,41 @@ func run() {
 	// Load projectile sprite positions
 	loadProjectileSpritePos()
 
-	var second = time.Tick(time.Second)
-	var framesASecond = 0
+	var mainColor = color.RGBA{89, 232, 248, 255}
+	titleText := text.New(pixel.V(50, WINSIZE.Y-100), textAtlas)
+	titleText.Color = mainColor
+	fmt.Fprintln(titleText, "Suppy Ship")
+
+	pauseText := text.New(pixel.V(50, WINSIZE.Y-50), textAtlas)
+	pauseText.Color = mainColor
+	fmt.Fprintln(pauseText, "Paused")
+
+	var startButton bool = false
 	var paused bool = false
 	for !win.Closed() {
-		// Handle pause button
-		if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
+
+		startButton = win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart)
+		if currentLevel == 0 {
+			titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
+
+			if win.Pressed(pixelgl.KeyEnter) || startButton {
+				currentLevel = 1
+			}
+
+		} else if win.JustPressed(pixelgl.KeyEscape) || startButton {
+			// Handle pause button
 			paused = !paused
+			pauseText.Draw(win, pixel.IM.Scaled(pauseText.Orig, 2))
 		}
 
-		if !paused {
-			win.Clear(colornames.Black)
+		// Game handling
+		if !paused && currentLevel != 0 {
+			win.Clear(color.RGBA{0, 0, 0, 0})
+
+			if !win.Focused() {
+				paused = true
+				continue
+			}
 
 			// Handle input
 			inputDirection, shooting := handleInput(win)
@@ -110,17 +138,10 @@ func run() {
 
 			// Draw ship
 			drawSprite(&ship.sprite, ship.phys.pos)
+
 			frameCount++
 		}
 
-		// Just for testing
-		framesASecond++
-		select {
-		case <-second:
-			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, framesASecond))
-			framesASecond = 0
-		default:
-		}
 		// Update window
 		win.Update()
 
