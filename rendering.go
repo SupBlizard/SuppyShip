@@ -2,9 +2,9 @@ package main
 
 import (
 	"image"
-	"os"
-
 	_ "image/png"
+	"math/rand"
+	"os"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -22,6 +22,79 @@ type spriteSheet struct {
 	alterSpeed  int
 	current     int
 	sheet       []*pixel.Sprite
+}
+
+const STAR_AMOUNT int = 32
+const STAR_MAX_PHASE int = 5
+
+type star struct {
+	pos   pixel.Vec
+	phase int
+	shine int
+}
+
+// Background stuff
+var starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
+var starBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, starSheet)
+var starSize pixel.Vec = pixel.V(5, 5)
+var starArray [STAR_AMOUNT]star
+var starPhases [STAR_MAX_PHASE + 1]pixel.Rect
+var starVelocity float64 = 3
+
+func loadStarPhases() {
+	for i := 0; i <= STAR_MAX_PHASE; i++ {
+		phase := float64(i) * starSize.X
+		starPhases[i] = pixel.R(phase, 0, phase+starSize.X, starSize.Y)
+	}
+}
+
+func generateStars() {
+	for i := 0; i < STAR_AMOUNT; i++ {
+
+		starArray[i] = star{
+			pos:   pixel.V(float64(rand.Int()%int(WINSIZE.X)), float64(rand.Int()%int(WINSIZE.Y))),
+			phase: rand.Int() % 6,
+			shine: 1,
+		}
+
+		if rand.Int()%2 == 0 {
+			starArray[i].shine = -1
+		}
+	}
+}
+
+func updateStarPhase(star int) {
+	if starArray[star].phase >= STAR_MAX_PHASE {
+		starArray[star].shine = -1
+	} else if starArray[star].phase < 1 {
+		starArray[star].shine = 1
+	}
+
+	starArray[star].phase += 1 * starArray[star].shine
+}
+
+func updateStars() {
+	if skipFrames(2) {
+		starBatch.Clear()
+		for i := 0; i < STAR_AMOUNT; i++ {
+
+			if skipFrames(4) {
+				updateStarPhase(i)
+			}
+
+			starArray[i].pos.Y -= starVelocity
+			if starArray[i].pos.Y < 0 {
+				starArray[i].pos.Y += WINSIZE.Y
+			}
+
+			star := pixel.NewSprite(starSheet, starPhases[starArray[i].phase])
+			star.Draw(starBatch, pixel.IM.Scaled(pixel.ZV, 2).Moved(starArray[i].pos))
+
+		}
+	}
+
+	starBatch.Draw(win)
+
 }
 
 // Draw a sprite

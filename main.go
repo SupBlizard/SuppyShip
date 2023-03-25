@@ -77,6 +77,10 @@ func run() {
 	// Load projectile sprite positions
 	loadProjectileSpritePos()
 
+	// Generate the star background
+	loadStarPhases()
+	generateStars()
+
 	var mainColor = color.RGBA{89, 232, 248, 255}
 	titleText := text.New(pixel.V(50, WINSIZE.Y-100), textAtlas)
 	titleText.Color = mainColor
@@ -133,6 +137,10 @@ func run() {
 			if shooting && gunCooldown == 0 && skipFrames(reloadDelay) {
 				createBullet(ship.phys.pos)
 			}
+
+			// Draw stars
+			updateStars()
+
 			// Update Projectiles
 			updateProjectiles()
 
