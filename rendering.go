@@ -39,7 +39,6 @@ var starBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, starSheet)
 var starSize pixel.Vec = pixel.V(5, 5)
 var starArray [STAR_AMOUNT]star
 var starPhases [STAR_MAX_PHASE + 1]pixel.Rect
-var starVelocity float64 = 3
 
 func loadStarPhases() {
 	for i := 0; i <= STAR_MAX_PHASE; i++ {
@@ -82,7 +81,7 @@ func updateStars() {
 				updateStarPhase(i)
 			}
 
-			starArray[i].pos.Y -= starVelocity
+			starArray[i].pos.Y -= globalVelocity
 			if starArray[i].pos.Y < 0 {
 				starArray[i].pos.Y += WINSIZE.Y
 			}

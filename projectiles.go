@@ -135,7 +135,7 @@ func updateProjectiles() {
 	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
 		if !projectiles[i].loaded {
 			continue
-		} else if inBounds(projectiles[i].phys.pos, NULL_BOUNDARY_RANGE) != pixel.ZV {
+		} else if inBounds(projectiles[i].phys.pos, zeroBorder) != pixel.ZV {
 			projectiles[i].loaded = false
 			continue
 		}

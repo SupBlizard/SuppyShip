@@ -13,11 +13,15 @@ import (
 // Globals
 const BOUNDARY_STRENGTH float64 = 2
 const AXIS_LOWERBOUND float64 = 0.1
+const DEFAULT_GLOBAL_VELOCITY float64 = 10
 
 var WINSIZE pixel.Vec = pixel.V(500, 700)
-var BOUNDARY_RANGE = [4]float64{300, 100, 70, 70} // Top Bottom Right Left
-var NULL_BOUNDARY_RANGE = [4]float64{0, 0, 0, 0}
+
+// Top Bottom Right Left
+var borderRanges = [3]float64{400, 150, 70}
+var zeroBorder = [3]float64{0, 0, 0}
 var frameCount int
+var globalVelocity float64 = 3
 
 var currentLevel uint8 = 0
 
@@ -111,6 +115,7 @@ func run() {
 		// Game handling
 		if !paused && currentLevel != 0 {
 			win.Clear(color.RGBA{0, 0, 0, 0})
+			globalVelocity = DEFAULT_GLOBAL_VELOCITY
 
 			if !win.Focused() {
 				paused = true
@@ -171,17 +176,27 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	}
 
 	// Enforce soft boundary on ship
-	boundsCollisions := inBounds(ship.pos, BOUNDARY_RANGE)
-	if boundsCollisions != pixel.ZV {
-		if boundsCollisions.Y == 1 {
-			ship.vel.Y -= borderForce(ship.acc, BOUNDARY_RANGE[0], WINSIZE.Y-ship.pos.Y)
-		} else if boundsCollisions.Y == -1 {
-			ship.vel.Y += borderForce(ship.acc, BOUNDARY_RANGE[1], ship.pos.Y)
+	borderCollisions := inBounds(ship.pos, borderRanges)
+	counterAcceleration := ship.acc * BOUNDARY_STRENGTH
+	var borderDepth float64
+
+	if borderCollisions != pixel.ZV {
+		if borderCollisions.Y == -1 {
+			borderDepth = findBorderDepth(WINSIZE.Y-ship.pos.Y, borderRanges[0])
+			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 2))
+
+		} else if borderCollisions.Y == 1 {
+			borderDepth = findBorderDepth(ship.pos.Y, borderRanges[1])
+			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 0.8))
 		}
-		if boundsCollisions.X == 1 {
-			ship.vel.X -= borderForce(ship.acc, BOUNDARY_RANGE[2], WINSIZE.X-ship.pos.X)
-		} else if boundsCollisions.X == -1 {
-			ship.vel.X += borderForce(ship.acc, BOUNDARY_RANGE[3], ship.pos.X)
+
+		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
+
+		// borderCollisions.X borderRanges[2]
+		if borderCollisions.X == -1 {
+			ship.vel.X -= counterAcceleration * findBorderDepth(WINSIZE.X-ship.pos.X, borderRanges[2])
+		} else if borderCollisions.X == 1 {
+			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, borderRanges[2])
 		}
 	}
 
@@ -193,23 +208,23 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	return ship
 }
 
-// Border force formula
-func borderForce(acc float64, boundaryRange float64, pos float64) float64 {
-	return acc * BOUNDARY_STRENGTH * (1 - pos/boundaryRange)
+// Calculate how far into the border something is
+func findBorderDepth(pos float64, borderRange float64) float64 {
+	return 1 - pos/borderRange
 }
 
 // Check if pos is in bounds
-func inBounds(pos pixel.Vec, boundaryRange [4]float64) pixel.Vec {
+func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 	var boundCollision pixel.Vec = pixel.ZV
 	if pos.Y >= WINSIZE.Y-boundaryRange[0] {
-		boundCollision.Y = 1
-	} else if pos.Y <= boundaryRange[1] {
 		boundCollision.Y = -1
+	} else if pos.Y <= boundaryRange[1] {
+		boundCollision.Y = 1
 	}
 	if pos.X >= WINSIZE.X-boundaryRange[2] {
-		boundCollision.X = 1
-	} else if pos.X <= boundaryRange[3] {
 		boundCollision.X = -1
+	} else if pos.X <= boundaryRange[2] {
+		boundCollision.X = 1
 	}
 
 	return boundCollision
