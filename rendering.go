@@ -3,6 +3,7 @@ package main
 import (
 	"image"
 	_ "image/png"
+	"math"
 	"math/rand"
 	"os"
 
@@ -24,7 +25,7 @@ type spriteSheet struct {
 	sheet       []*pixel.Sprite
 }
 
-const STAR_AMOUNT int = 32
+const STAR_AMOUNT int = 80
 const STAR_MAX_PHASE int = 5
 
 type star struct {
@@ -48,16 +49,39 @@ func loadStarPhases() {
 }
 
 func generateStars() {
-	for i := 0; i < STAR_AMOUNT; i++ {
+	var floatStarAmount float64 = float64(STAR_AMOUNT)
+	var sqrtStarAmount float64 = math.Sqrt(floatStarAmount)
+	var windowRatio float64 = WINSIZE.Y / WINSIZE.X
 
-		starArray[i] = star{
-			pos:   pixel.V(float64(rand.Int()%int(WINSIZE.X)), float64(rand.Int()%int(WINSIZE.Y))),
-			phase: rand.Int() % 6,
-			shine: 1,
+	// Get Grid size
+	closestFactor := 1.0
+	closestRatio := floatStarAmount
+	for i := 1.0; floatStarAmount/i > sqrtStarAmount; i *= 2 {
+		currentRatio := floatStarAmount / math.Pow(i, 2)
+		if math.Abs(currentRatio-windowRatio) < closestRatio {
+			closestRatio = currentRatio
+			closestFactor = i
 		}
+	}
 
-		if rand.Int()%2 == 0 {
-			starArray[i].shine = -1
+	// TODO: Need to calculate the optimal scalar (currently hardcoded)
+	starGridRatio := pixel.V(closestFactor, floatStarAmount/closestFactor).Scaled(9)
+
+	// Generate stars
+	currentStar := 0
+	for y := 0.0; y < WINSIZE.Y; y += starGridRatio.Y {
+		for x := 0.0; x < WINSIZE.X; x += starGridRatio.X {
+			if currentStar >= STAR_AMOUNT {
+				return
+			}
+
+			starArray[currentStar] = star{
+				pos:   pixel.V(x, y).Add(pixel.V(float64(rand.Int()%80), float64(rand.Int()%80))),
+				phase: rand.Int() % 6,
+				shine: 1,
+			}
+
+			currentStar++
 		}
 	}
 }
