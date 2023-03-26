@@ -35,7 +35,7 @@ type projectile struct {
 
 var shipBulletPhys physObj = physObj{
 	pos: pixel.V(0, 10),
-	vel: pixel.V(0, 10),
+	vel: pixel.V(0, 12),
 	acc: 0,
 	frc: 0,
 }

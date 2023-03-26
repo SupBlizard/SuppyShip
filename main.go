@@ -15,13 +15,13 @@ const BOUNDARY_STRENGTH float64 = 2
 const AXIS_LOWERBOUND float64 = 0.1
 const DEFAULT_GLOBAL_VELOCITY float64 = 10
 
-var WINSIZE pixel.Vec = pixel.V(500, 700)
+var WINSIZE pixel.Vec = pixel.V(512, 768)
 
 // Top Bottom Right Left
 var borderRanges = [3]float64{400, 150, 70}
 var zeroBorder = [3]float64{0, 0, 0}
 var frameCount int
-var globalVelocity float64 = 3
+var globalVelocity float64 = 5
 
 var currentLevel uint8 = 0
 
@@ -117,11 +117,6 @@ func run() {
 			win.Clear(color.RGBA{0, 0, 0, 0})
 			globalVelocity = DEFAULT_GLOBAL_VELOCITY
 
-			if !win.Focused() {
-				paused = true
-				continue
-			}
-
 			// Handle input
 			inputDirection, shooting := handleInput(win)
 
@@ -183,11 +178,11 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	if borderCollisions != pixel.ZV {
 		if borderCollisions.Y == -1 {
 			borderDepth = findBorderDepth(WINSIZE.Y-ship.pos.Y, borderRanges[0])
-			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 2))
+			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 1.3))
 
 		} else if borderCollisions.Y == 1 {
 			borderDepth = findBorderDepth(ship.pos.Y, borderRanges[1])
-			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 0.8))
+			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 0.6))
 		}
 
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
