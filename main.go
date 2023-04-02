@@ -120,10 +120,23 @@ func run() {
 			globalVelocity = DEFAULT_GLOBAL_VELOCITY
 
 			// Handle input
-			inputDirection, rollButton, shooting := handleInput(win)
+			inputDirection, shooting, rolling := handleInput(win)
+
+			// Rolling
+			sign := signbit(ship.phys.vel.X)
+			if rollCooldown == 0 {
+				if rolling && math.Abs(ship.phys.vel.X) > 0.5 {
+					ship.phys.vel.X += 9 * sign
+					rollCooldown = ROLL_COOLDOWN
+				}
+			} else {
+				inputDirection.X = 0
+				ship.phys.vel.X += 0.3 * sign
+				rollCooldown--
+			}
 
 			// Update ship
-			ship.phys = updateShipPhys(ship.phys, inputDirection, rollButton)
+			ship.phys = updateShipPhys(ship.phys, inputDirection, rolling)
 
 			// Change ship direction sprite
 			ship.sprite.current = 0
@@ -196,25 +209,8 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec, rollButton bool) phy
 		}
 	}
 
-	if shipSpeed := ship.vel.Len(); shipSpeed != 0 {
-		// Rolling mechanics
-		sign := 1.0
-		if math.Signbit(ship.vel.X) {
-			sign = -1.0
-		}
-		if rollCooldown == 0 {
-			if rollButton && math.Abs(ship.vel.X) > 0.5 {
-
-				ship.vel.X += 9 * sign
-				rollCooldown = ROLL_COOLDOWN
-
-			}
-		} else {
-			rollCooldown--
-			ship.vel.X += 0.3 * sign
-		}
-
-		// Add new velocity to the position
+	// Add new velocity to the position
+	if ship.vel.Len() != 0 {
 		ship.pos = ship.pos.Add(ship.vel)
 	}
 
@@ -280,14 +276,19 @@ func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
 
 	// Ignore X axis input if rolling
 	var rollButton bool
-	if rollCooldown != 0 {
-		if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonX) || win.JustPressed(pixelgl.KeyO) {
-			rollButton = true
-		}
-		dirVec.X = 0
+	if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonX) || win.JustPressed(pixelgl.KeyO) {
+		rollButton = true
 	}
 
-	return dirVec, rollButton, shootButton
+	return dirVec, shootButton, rollButton
+}
+
+func signbit(x float64) float64 {
+	sign := 1.0
+	if math.Signbit(x) {
+		sign = -1.0
+	}
+	return sign
 }
 
 func skipFrames(skip int) bool {
