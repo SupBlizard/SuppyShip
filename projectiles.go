@@ -1,8 +1,6 @@
 package main
 
 import (
-	"math/rand"
-
 	"github.com/faiface/pixel"
 )
 
@@ -22,8 +20,6 @@ var projectilesLoaded uint16
 var projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
 var projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
 var projSprSize pixel.Vec = pixel.V(6, 16)
-
-var bulletSpread = [5]float64{0, 0.05, -0.05}
 
 // Structs
 type projectile struct {
@@ -92,10 +88,10 @@ func createBullet(shipPos pixel.Vec) {
 
 		// Initialize bullet to default
 		projectiles[i] = projectileTypes[0]
-		projectiles[i].phys.vel.X = bulletSpread[rand.Int()%3]
 		projectiles[i].phys.pos = projectiles[i].phys.pos.Add(shipPos)
 		bulletPos := projectiles[i].phys.pos
 
+		// Check if onyx bullet should be created
 		indicies, count := bulletsWithinRadius(projectiles[i].phys.pos, ONYX_CLUSTER_RADIUS)
 		if count >= ONYX_CLUSTER_REQUIREMENT {
 			// Unload projectiles
