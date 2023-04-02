@@ -135,9 +135,9 @@ func run() {
 				}
 			}
 
-			// Create new bullets
+			// Fire bullets
 			if shooting && gunCooldown == 0 && skipFrames(reloadDelay) {
-				createBullet(ship.phys.pos)
+				fireBullet(ship.phys.pos)
 			}
 
 			// Draw stars

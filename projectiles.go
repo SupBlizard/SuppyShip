@@ -14,7 +14,7 @@ var gunCooldown = 0
 
 // Projectile Allocation Array
 var projectiles [BULLET_ALLOC_SIZE]projectile
-var projectilesLoaded uint16
+var projectilesLoaded bool
 
 // Projectile Rendering related
 var projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
@@ -23,6 +23,7 @@ var projSprSize pixel.Vec = pixel.V(6, 16)
 
 // Structs
 type projectile struct {
+	id         int
 	name       string
 	phys       physObj
 	loaded     bool
@@ -42,7 +43,8 @@ var shipBulletPhys physObj = physObj{
 
 var projectileTypes = [4]projectile{
 	{
-		name:       "Bullet",
+		id:         0,
+		name:       "Ship Bullet",
 		phys:       shipBulletPhys,
 		loaded:     true,
 		friendly:   true,
@@ -51,6 +53,7 @@ var projectileTypes = [4]projectile{
 		scale:      1,
 	},
 	{
+		id:         1,
 		name:       "Onyx Bullet",
 		phys:       shipBulletPhys,
 		loaded:     true,
@@ -60,6 +63,7 @@ var projectileTypes = [4]projectile{
 		scale:      3,
 	},
 	{
+		id:         2,
 		name:       "Debris",
 		phys:       shipBulletPhys,
 		loaded:     true,
@@ -79,35 +83,42 @@ func loadProjectileSpritePos() {
 	}
 }
 
-// Create a bullet if a slot is free
-func createBullet(shipPos pixel.Vec) {
+// Spawn a new projectile if one can be loaded
+func spawnProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
+	// Find an unloaded projectile slot
 	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
+		// Ignore loaded slots
 		if projectiles[i].loaded {
 			continue
 		}
 
-		// Initialize bullet to default
-		projectiles[i] = projectileTypes[0]
-		projectiles[i].phys.pos = projectiles[i].phys.pos.Add(shipPos)
-		bulletPos := projectiles[i].phys.pos
+		projectiles[i] = projectileTypes[projType]
+		projectiles[i].phys.pos = pos
+		projectiles[i].phys.vel = vel
 
-		// Check if onyx bullet should be created
-		indicies, count := bulletsWithinRadius(projectiles[i].phys.pos, ONYX_CLUSTER_RADIUS)
-		if count >= ONYX_CLUSTER_REQUIREMENT {
-			// Unload projectiles
-			for _, idx := range indicies {
-				projectiles[idx].loaded = false
-			}
-
-			projectiles[i] = projectileTypes[1]
-			projectiles[i].phys.pos = bulletPos
-
-			gunCooldown = ONYX_COOLDOWN
-		}
-
-		projectilesLoaded = 1
+		// Return (otherwise all projectiles will be spawned)
 		return
 	}
+}
+
+// Fire a new bullet
+func fireBullet(shipPos pixel.Vec) {
+	// Check if an Onyx bullet should be created
+	indicies, count := bulletsWithinRadius(shipPos, ONYX_CLUSTER_RADIUS)
+	if count >= ONYX_CLUSTER_REQUIREMENT {
+		// Unload projectiles used
+		for _, idx := range indicies {
+			projectiles[idx].loaded = false
+		}
+
+		// Spawn Onyx bullet
+		spawnProjectile(1, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
+		gunCooldown = ONYX_COOLDOWN
+	} else {
+		spawnProjectile(0, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
+	}
+
+	projectilesLoaded = true
 }
 
 // Return all of the bullets within a certain radius around a point
@@ -128,11 +139,11 @@ func updateProjectiles() {
 	if gunCooldown > 0 {
 		gunCooldown--
 	}
-	if projectilesLoaded == 0 {
+	if !projectilesLoaded {
 		return
 	}
 
-	projectilesLoaded = 0
+	projectilesLoaded = false
 	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
 		if !projectiles[i].loaded {
 			continue
@@ -142,7 +153,7 @@ func updateProjectiles() {
 		}
 
 		// Count as loaded projectile
-		projectilesLoaded++
+		projectilesLoaded = true
 
 		// Animation cycle speed
 		if skipFrames(projectiles[i].cycleSpeed) {
