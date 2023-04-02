@@ -5,7 +5,7 @@ import (
 )
 
 const BULLET_ALLOC_SIZE int = 256
-const ONYX_CLUSTER_REQUIREMENT int = 7
+const ONYX_CLUSTER_REQUIREMENT uint16 = 7
 const ONYX_CLUSTER_RADIUS float64 = 30
 const ONYX_COOLDOWN int = 60
 
@@ -104,7 +104,7 @@ func spawnProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
 // Fire a new bullet
 func fireBullet(shipPos pixel.Vec) {
 	// Check if an Onyx bullet should be created
-	indicies, count := bulletsWithinRadius(shipPos, ONYX_CLUSTER_RADIUS)
+	indicies, count := projectilesWithinRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
 	if count >= ONYX_CLUSTER_REQUIREMENT {
 		// Unload projectiles used
 		for _, idx := range indicies {
@@ -121,17 +121,17 @@ func fireBullet(shipPos pixel.Vec) {
 	projectilesLoaded = true
 }
 
-// Return all of the bullets within a certain radius around a point
-func bulletsWithinRadius(point pixel.Vec, radius float64) ([]int, int) {
-	var insideRadius []int
-	var projectileCount int = 0
+// Return all of the projectiles within a certain radius around a point
+func projectilesWithinRadius(point pixel.Vec, radius float64, friendly bool) ([]uint8, uint16) {
+	var inside []uint8
+	var count uint16 = 0
 	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
-		if projectiles[i].loaded && projectiles[i].phys.pos.Sub(point).Len() < radius {
-			insideRadius = append(insideRadius, i)
-			projectileCount++
+		if projectiles[i].loaded && projectiles[i].friendly == friendly && projectiles[i].phys.pos.Sub(point).Len() < radius {
+			inside = append(inside, uint8(i))
+			count++
 		}
 	}
-	return insideRadius, projectileCount
+	return inside, count
 }
 
 // Update the state of each bullet for one frame
