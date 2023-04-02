@@ -23,15 +23,19 @@ var projSprSize pixel.Vec = pixel.V(6, 16)
 
 // Structs
 type projectile struct {
-	id         int
-	name       string
-	phys       physObj
-	loaded     bool
-	friendly   bool
-	isAltered  uint8
+	id       int
+	name     string
+	phys     physObj
+	loaded   bool
+	friendly bool
+	sprite   projectileSprite
+}
+
+type projectileSprite struct {
+	cycle      uint8
 	cycleSpeed int
 	scale      float64
-	spritesPos [2]pixel.Rect
+	pos        [2]pixel.Rect
 }
 
 var shipBulletPhys physObj = physObj{
@@ -43,34 +47,40 @@ var shipBulletPhys physObj = physObj{
 
 var projectileTypes = [4]projectile{
 	{
-		id:         0,
-		name:       "Ship Bullet",
-		phys:       shipBulletPhys,
-		loaded:     true,
-		friendly:   true,
-		isAltered:  0,
-		cycleSpeed: 15,
-		scale:      1,
+		id:       0,
+		name:     "Ship Bullet",
+		phys:     shipBulletPhys,
+		loaded:   true,
+		friendly: true,
+		sprite: projectileSprite{
+			cycle:      0,
+			cycleSpeed: 15,
+			scale:      1,
+		},
 	},
 	{
-		id:         1,
-		name:       "Onyx Bullet",
-		phys:       shipBulletPhys,
-		loaded:     true,
-		friendly:   true,
-		isAltered:  0,
-		cycleSpeed: 15,
-		scale:      3,
+		id:       1,
+		name:     "Onyx Bullet",
+		phys:     shipBulletPhys,
+		loaded:   true,
+		friendly: true,
+		sprite: projectileSprite{
+			cycle:      0,
+			cycleSpeed: 15,
+			scale:      3,
+		},
 	},
 	{
-		id:         2,
-		name:       "Debris",
-		phys:       shipBulletPhys,
-		loaded:     true,
-		friendly:   false,
-		isAltered:  0,
-		cycleSpeed: 15,
-		scale:      4,
+		id:       2,
+		name:     "Debris",
+		phys:     shipBulletPhys,
+		loaded:   true,
+		friendly: false,
+		sprite: projectileSprite{
+			cycle:      0,
+			cycleSpeed: 15,
+			scale:      4,
+		},
 	},
 }
 
@@ -78,7 +88,7 @@ var projectileTypes = [4]projectile{
 func loadProjectileSpritePos() {
 	for y := projectileSheet.Bounds().Min.Y; y < projectileSheet.Bounds().Max.Y; y += projSprSize.Y {
 		for x := projectileSheet.Bounds().Min.X; x < projectileSheet.Bounds().Max.X; x += projSprSize.X {
-			projectileTypes[int(y/projSprSize.Y)].spritesPos[int(x/projSprSize.X)] = pixel.R(x, y, x+projSprSize.X, y+projSprSize.Y)
+			projectileTypes[int(y/projSprSize.Y)].sprite.pos[int(x/projSprSize.X)] = pixel.R(x, y, x+projSprSize.X, y+projSprSize.Y)
 		}
 	}
 }
@@ -156,11 +166,11 @@ func updateProjectiles() {
 		projectilesLoaded = true
 
 		// Animation cycle speed
-		if skipFrames(projectiles[i].cycleSpeed) {
-			if projectiles[i].isAltered == 0 {
-				projectiles[i].isAltered = 1
+		if skipFrames(projectiles[i].sprite.cycleSpeed) {
+			if projectiles[i].sprite.cycle == 0 {
+				projectiles[i].sprite.cycle = 1
 			} else {
-				projectiles[i].isAltered = 0
+				projectiles[i].sprite.cycle = 0
 			}
 		}
 
@@ -168,8 +178,8 @@ func updateProjectiles() {
 		projectiles[i].phys.pos = projectiles[i].phys.pos.Add(projectiles[i].phys.vel)
 
 		// Draw projectile
-		projectile := pixel.NewSprite(projectileSheet, projectiles[i].spritesPos[projectiles[0].isAltered])
-		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].scale).Moved(projectiles[i].phys.pos))
+		projectile := pixel.NewSprite(projectileSheet, projectiles[i].sprite.pos[projectiles[0].sprite.cycle])
+		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].sprite.scale).Moved(projectiles[i].phys.pos))
 
 	}
 

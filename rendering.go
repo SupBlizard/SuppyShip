@@ -16,12 +16,12 @@ const GLOBAL_ALTER_SPEED int = 5
 var win *pixelgl.Window = nil
 
 type spriteSheet struct {
-	scale       float64
-	bounds      pixel.Rect
-	alterOffset int
-	isAltered   bool
-	alterSpeed  int
+	offset      int
+	cycle       int
+	cycleNumber int
+	cycleSpeed  int
 	current     int
+	scale       float64
 	sheet       []*pixel.Sprite
 }
 
@@ -122,12 +122,13 @@ func updateStars() {
 
 // Draw a sprite
 func drawSprite(sprite *spriteSheet, pos pixel.Vec) {
-	if frameCount%sprite.alterSpeed == 0 {
-		sprite.isAltered = !sprite.isAltered
+	if frameCount%sprite.cycleSpeed == 0 {
+		sprite.cycle++
+		if sprite.cycle >= sprite.cycleNumber {
+			sprite.cycle = 0
+		}
 	}
-	if sprite.isAltered {
-		sprite.current += sprite.alterOffset
-	}
+	sprite.current += sprite.offset * sprite.cycle
 
 	sprite.sheet[sprite.current].Draw(win, pixel.IM.Scaled(pixel.ZV, sprite.scale).Moved(pos))
 }
@@ -138,23 +139,26 @@ func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64) spri
 
 	sprite := spriteSheet{
 		scale:       scale,
-		bounds:      image.Bounds(),
-		alterOffset: 0,
-		isAltered:   false,
-		alterSpeed:  GLOBAL_ALTER_SPEED,
+		offset:      0,
+		cycle:       0,
+		cycleNumber: 0,
+		cycleSpeed:  GLOBAL_ALTER_SPEED,
 		current:     0,
 		sheet:       nil,
 	}
 
-	counter := 0
+	var spriteNumber int
+	var cycleNumber int
 	for y := image.Bounds().Min.Y; y < image.Bounds().Max.Y; y += spriteSize.Y {
 		for x := image.Bounds().Min.X; x < image.Bounds().Max.X; x += spriteSize.X {
 			sprite.sheet = append(sprite.sheet, pixel.NewSprite(image, pixel.R(x, y, x+spriteSize.X, y+spriteSize.Y)))
-			counter++
+			spriteNumber++
 		}
+		cycleNumber++
 	}
 
-	sprite.alterOffset = counter / 2
+	sprite.cycleNumber = cycleNumber
+	sprite.offset = spriteNumber / cycleNumber
 	return sprite
 }
 
