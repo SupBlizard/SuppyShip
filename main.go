@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -12,8 +13,9 @@ import (
 
 // Globals
 const BOUNDARY_STRENGTH float64 = 2
-const AXIS_LOWERBOUND float64 = 0.1
+const AXIS_DEADZONE float64 = 0.1
 const DEFAULT_GLOBAL_VELOCITY float64 = 10
+const ROLL_COOLDOWN int = 20
 
 var WINSIZE pixel.Vec = pixel.V(512, 768)
 
@@ -21,9 +23,11 @@ var WINSIZE pixel.Vec = pixel.V(512, 768)
 var borderRanges = [3]float64{400, 150, 70}
 var zeroBorder = [3]float64{0, 0, 0}
 var frameCount int
-var globalVelocity float64 = 5
 
-var currentLevel uint8 = 0
+var rollCooldown int
+var globalVelocity float64 = 5
+var globalAcceleration = [2]float64{1.4, 0.6}
+var currentLevel uint8
 
 // Input direction vector lookup table
 var inputVec = [4]pixel.Vec{
@@ -94,19 +98,17 @@ func run() {
 	pauseText.Color = mainColor
 	fmt.Fprintln(pauseText, "Paused")
 
-	var startButton bool = false
-	var paused bool = false
-	for !win.Closed() {
+	var (
+		paused bool
+	)
 
-		startButton = win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart)
+	for !win.Closed() {
 		if currentLevel == 0 {
 			titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
-
-			if win.Pressed(pixelgl.KeyEnter) || startButton {
+			if win.Pressed(pixelgl.KeyEnter) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
 				currentLevel = 1
 			}
-
-		} else if win.JustPressed(pixelgl.KeyEscape) || startButton {
+		} else if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
 			// Handle pause button
 			paused = !paused
 			pauseText.Draw(win, pixel.IM.Scaled(pauseText.Orig, 2))
@@ -118,14 +120,14 @@ func run() {
 			globalVelocity = DEFAULT_GLOBAL_VELOCITY
 
 			// Handle input
-			inputDirection, shooting := handleInput(win)
+			inputDirection, rollButton, shooting := handleInput(win)
 
 			// Update ship
-			ship.phys = updateShipPhys(ship.phys, inputDirection)
+			ship.phys = updateShipPhys(ship.phys, inputDirection, rollButton)
 
 			// Change ship direction sprite
 			ship.sprite.current = 0
-			if inputDirection.X != 0 {
+			if math.Abs(inputDirection.X) > AXIS_DEADZONE {
 				if ship.phys.vel.X > 0 {
 					ship.sprite.current = 2
 				} else {
@@ -157,7 +159,7 @@ func run() {
 }
 
 // Update the ship velocity and position
-func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
+func updateShipPhys(ship physObj, inputDirection pixel.Vec, rollButton bool) physObj {
 	// Give velocity a minimum limit or apply friction to the velocity if there is any
 	if ship.vel.Len() <= 0.01 {
 		ship.vel = pixel.ZV
@@ -171,23 +173,22 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 	}
 
 	// Enforce soft boundary on ship
-	borderCollisions := inBounds(ship.pos, borderRanges)
-	counterAcceleration := ship.acc * BOUNDARY_STRENGTH
-	var borderDepth float64
+	if borderCollisions := inBounds(ship.pos, borderRanges); borderCollisions != pixel.ZV {
+		var borderDepth float64
+		var globalAccIdx int
 
-	if borderCollisions != pixel.ZV {
 		if borderCollisions.Y == -1 {
 			borderDepth = findBorderDepth(WINSIZE.Y-ship.pos.Y, borderRanges[0])
-			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 1.3))
-
+			globalAccIdx = 0
 		} else if borderCollisions.Y == 1 {
 			borderDepth = findBorderDepth(ship.pos.Y, borderRanges[1])
-			globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * 0.6))
+			globalAccIdx = 1
 		}
 
+		counterAcceleration := ship.acc * BOUNDARY_STRENGTH
+		globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * globalAcceleration[globalAccIdx]))
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
 
-		// borderCollisions.X borderRanges[2]
 		if borderCollisions.X == -1 {
 			ship.vel.X -= counterAcceleration * findBorderDepth(WINSIZE.X-ship.pos.X, borderRanges[2])
 		} else if borderCollisions.X == 1 {
@@ -195,8 +196,25 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec) physObj {
 		}
 	}
 
-	// Add new velocity to the position if there is any input
-	if ship.vel.Len() != 0 {
+	if shipSpeed := ship.vel.Len(); shipSpeed != 0 {
+		// Rolling mechanics
+		sign := 1.0
+		if math.Signbit(ship.vel.X) {
+			sign = -1.0
+		}
+		if rollCooldown == 0 {
+			if rollButton && math.Abs(ship.vel.X) > 0.5 {
+
+				ship.vel.X += 9 * sign
+				rollCooldown = ROLL_COOLDOWN
+
+			}
+		} else {
+			rollCooldown--
+			ship.vel.X += 0.3 * sign
+		}
+
+		// Add new velocity to the position
 		ship.pos = ship.pos.Add(ship.vel)
 	}
 
@@ -226,52 +244,50 @@ func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 }
 
 // Handle user input for a single frame
-func handleInput(win *pixelgl.Window) (pixel.Vec, bool) {
-	var dirVec pixel.Vec = pixel.ZV
-	var shootButton bool = false
-	var dirVecLen float64
-
-	if win.JoystickPresent(pixelgl.Joystick1) {
-		// Add gamepad axis positions to the direction vector
-		dirVec.X = win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftX)
-		dirVec.Y = win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftY) * -1
-		dirVecLen = dirVec.Len()
-		if dirVecLen < AXIS_LOWERBOUND {
-			dirVec = pixel.ZV
-		}
-
-		// Shoot
-		if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonA) {
-			shootButton = true
-		}
-	} else {
-		// Add input vectors to the direction vector
-		if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
-			dirVec = dirVec.Add(inputVec[0])
-		}
-		if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
-			dirVec = dirVec.Add(inputVec[1])
-		}
-		if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyS) {
-			dirVec = dirVec.Add(inputVec[2])
-		}
-		if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyD) {
-			dirVec = dirVec.Add(inputVec[3])
-		}
-
-		dirVecLen = dirVec.Len()
-
-		// Shoot
-		if win.Pressed(pixelgl.KeySpace) {
-			shootButton = true
-		}
+func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
+	// Initialize dirVec with joystick pos
+	var dirVec pixel.Vec = pixel.Vec{
+		X: win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftX),
+		Y: win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftY) * -1,
 	}
 
-	if dirVecLen > 1 {
+	// Add keyboard input to the direction vector
+	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
+		dirVec = dirVec.Add(inputVec[0])
+	}
+	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
+		dirVec = dirVec.Add(inputVec[1])
+	}
+	if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyS) {
+		dirVec = dirVec.Add(inputVec[2])
+	}
+	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyD) {
+		dirVec = dirVec.Add(inputVec[3])
+	}
+
+	// Trim directional vector and add deadzone
+	if dirVecLen := dirVec.Len(); dirVecLen > 1 {
 		dirVec = dirVec.Scaled(1 / dirVecLen)
+	} else if dirVecLen < AXIS_DEADZONE {
+		dirVec = pixel.ZV
 	}
 
-	return dirVec, shootButton
+	// shoot
+	var shootButton bool
+	if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonA) || win.Pressed(pixelgl.KeyP) {
+		shootButton = true
+	}
+
+	// Ignore X axis input if rolling
+	var rollButton bool
+	if rollCooldown != 0 {
+		if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonX) || win.JustPressed(pixelgl.KeyO) {
+			rollButton = true
+		}
+		dirVec.X = 0
+	}
+
+	return dirVec, rollButton, shootButton
 }
 
 func skipFrames(skip int) bool {
