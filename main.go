@@ -45,8 +45,14 @@ type physObj struct {
 	frc float64   // friction
 }
 
+type circularHitbox struct {
+	radius float64
+	offset pixel.Vec
+}
+
 type player struct {
 	phys   physObj
+	hitbox circularHitbox
 	sprite spriteSheet
 }
 
@@ -79,6 +85,10 @@ func run() {
 			acc: 1.1,
 			frc: 1 - 0.08,
 		},
+		hitbox: circularHitbox{
+			radius: 12,
+			offset: pixel.ZV,
+		},
 		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 2),
 	}
 
@@ -97,6 +107,11 @@ func run() {
 	pauseText := text.New(pixel.V(50, WINSIZE.Y-50), textAtlas)
 	pauseText.Color = mainColor
 	fmt.Fprintln(pauseText, "Paused")
+
+	// temp add enemy
+	enemies[0] = enemyTypes[0]
+	enemies[0].phys.pos = win.Bounds().Center()
+	enemies[0].sprite.cycleSpeed = 30
 
 	var (
 		paused bool
@@ -155,6 +170,9 @@ func run() {
 
 			// Draw stars
 			updateStars()
+
+			// Update Enemies
+			updateEnemies()
 
 			// Update Projectiles
 			updateProjectiles()
