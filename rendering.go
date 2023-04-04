@@ -12,11 +12,11 @@ import (
 var win *pixelgl.Window = nil
 
 type spriteSheet struct {
-	offset      int
-	cycle       int
-	cycleNumber int
+	offset      uint16
+	cycle       uint16
+	cycleNumber uint16
 	cycleSpeed  int
-	current     int
+	current     uint16
 	scale       float64
 	sheet       []*pixel.Sprite
 }
@@ -42,12 +42,12 @@ func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64) spri
 		offset:      0,
 		cycle:       0,
 		cycleNumber: 0,
-		cycleSpeed:  5,
+		cycleSpeed:  10,
 		current:     0,
 		sheet:       nil,
 	}
 
-	var spriteNumber int
+	var spriteNumber uint16
 	for y := sheet.Bounds().Min.Y; y < sheet.Bounds().Max.Y; y += spriteSize.Y {
 		for x := sheet.Bounds().Min.X; x < sheet.Bounds().Max.X; x += spriteSize.X {
 			sprite.sheet = append(sprite.sheet, pixel.NewSprite(sheet, pixel.R(x, y, x+spriteSize.X, y+spriteSize.Y)))
