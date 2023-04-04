@@ -26,11 +26,11 @@ var enemyTypes = []enemy{
 		},
 		loaded: true,
 		hitbox: circularHitbox{
-			radius: 16,
+			radius: 20,
 			offset: pixel.ZV,
 		},
-		health: 5,
-		sprite: loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 2),
+		health: 20,
+		sprite: loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3),
 		name:   "Asteroid",
 		id:     0,
 	},
@@ -53,18 +53,21 @@ func updateEnemies() {
 func asteroid(ast *enemy) {
 	bullets, count := projectilesWithinRadius(ast.phys.pos, ast.hitbox.radius, true)
 	if count > 0 {
-		ast.health -= count
+
+		if ast.health <= count {
+			ast.loaded = false
+			return
+		} else {
+			ast.health -= count
+		}
+
 		// Unload projectiles that collided
 		for _, idx := range bullets {
 			projectiles[idx].loaded = false
 		}
 	}
 
-	if ast.health < 1 {
-		ast.loaded = false
-		return
-	}
-
-	ast.sprite.current = ast.health - 1
+	// TODO: Make sprite stages dynamic to health
+	ast.sprite.current = ast.health / 4
 	drawSprite(&ast.sprite, ast.phys.pos)
 }
