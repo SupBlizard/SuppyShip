@@ -171,11 +171,11 @@ func run() {
 			// Draw stars
 			updateStars()
 
-			// Update Enemies
-			updateEnemies()
-
 			// Update Projectiles
 			updateProjectiles()
+
+			// Update Enemies
+			updateEnemies()
 
 			// Draw ship
 			drawSprite(&ship.sprite, ship.phys.pos)
