@@ -1,6 +1,8 @@
 package main
 
-import "github.com/faiface/pixel"
+import (
+	"github.com/faiface/pixel"
+)
 
 const ENEMY_ALLOC_SIZE int = 16
 
@@ -29,7 +31,7 @@ var enemyTypes = []enemy{
 			radius: 20,
 			offset: pixel.ZV,
 		},
-		health: 20,
+		health: 5,
 		sprite: loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3),
 		name:   "Asteroid",
 		id:     0,
@@ -56,18 +58,16 @@ func asteroid(ast *enemy) {
 
 		if ast.health <= count {
 			ast.loaded = false
-			return
 		} else {
 			ast.health -= count
 		}
 
 		// Unload projectiles that collided
 		for _, idx := range bullets {
-			projectiles[idx].loaded = false
+			unloadProjectile(idx)
 		}
 	}
-
 	// TODO: Make sprite stages dynamic to health
-	ast.sprite.current = ast.health / 4
+	ast.sprite.current = ast.health - 1
 	drawSprite(&ast.sprite, ast.phys.pos)
 }
