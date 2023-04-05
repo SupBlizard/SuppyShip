@@ -4,22 +4,24 @@ import (
 	"github.com/faiface/pixel"
 )
 
-const BULLET_ALLOC_SIZE int = 256
+const BULLET_ALLOC_SIZE uint16 = 256
 const ONYX_CLUSTER_REQUIREMENT uint16 = 7
 const ONYX_CLUSTER_RADIUS float64 = 30
 const ONYX_COOLDOWN int = 60
 
-var reloadDelay int = 4
-var gunCooldown = 0
+var (
+	reloadDelay int = 4
+	gunCooldown     = 0
 
-// Projectile Allocation Array
-var projectiles [BULLET_ALLOC_SIZE]projectile
-var projectilesLoaded bool
+	// Projectile Allocation
+	projectiles       [BULLET_ALLOC_SIZE]projectile
+	loadedProjectiles []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
 
-// Projectile Rendering related
-var projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
-var projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
-var projSprSize pixel.Vec = pixel.V(6, 16)
+	// Projectile Rendering related
+	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
+	projectileBatch *pixel.Batch  = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
+	projSprSize     pixel.Vec     = pixel.V(6, 16)
+)
 
 // Structs
 type projectile struct {
@@ -40,7 +42,7 @@ type projectileSprite struct {
 
 var shipBulletPhys physObj = physObj{
 	pos: pixel.V(0, 10),
-	vel: pixel.V(0, 12),
+	vel: pixel.V(0, 0.5),
 	acc: 0,
 	frc: 0,
 }
@@ -93,10 +95,10 @@ func loadProjectileSpritePos() {
 	}
 }
 
-// Spawn a new projectile if one can be loaded
-func spawnProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
+// Load a new projectile if there is space
+func loadProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
 	// Find an unloaded projectile slot
-	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
+	for i := uint16(0); i < BULLET_ALLOC_SIZE; i++ {
 		// Ignore loaded slots
 		if projectiles[i].loaded {
 			continue
@@ -106,8 +108,22 @@ func spawnProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
 		projectiles[i].phys.pos = pos
 		projectiles[i].phys.vel = vel
 
+		// Add projectile to the loaded list
+		loadedProjectiles = append(loadedProjectiles, i)
+
 		// Return (otherwise all projectiles will be spawned)
 		return
+	}
+}
+
+// Unload projectiles
+func unloadProjectile(idx uint16) {
+	projectiles[idx].loaded = false
+	for i := 0; i < len(loadedProjectiles); i++ {
+		if loadedProjectiles[i] == idx {
+			loadedProjectiles = append(loadedProjectiles[:i], loadedProjectiles[i+1:]...)
+			return
+		}
 	}
 }
 
@@ -118,26 +134,29 @@ func fireBullet(shipPos pixel.Vec) {
 	if count >= ONYX_CLUSTER_REQUIREMENT {
 		// Unload projectiles used
 		for _, idx := range indicies {
-			projectiles[idx].loaded = false
+			unloadProjectile(idx)
 		}
 
 		// Spawn Onyx bullet
-		spawnProjectile(1, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
+		loadProjectile(1, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
 		gunCooldown = ONYX_COOLDOWN
 	} else {
-		spawnProjectile(0, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
+		loadProjectile(0, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
 	}
-
-	projectilesLoaded = true
 }
 
 // Return all of the projectiles within a certain radius around a point
-func projectilesWithinRadius(point pixel.Vec, radius float64, friendly bool) ([]uint8, uint16) {
-	var inside []uint8
+func projectilesWithinRadius(point pixel.Vec, radius float64, friendliness bool) ([]uint16, uint16) {
+	var inside []uint16
 	var count uint16 = 0
-	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
-		if projectiles[i].loaded && projectiles[i].friendly == friendly && projectiles[i].phys.pos.Sub(point).Len() < radius {
-			inside = append(inside, uint8(i))
+
+	var idx uint16
+	for i := uint16(0); i < uint16(len(loadedProjectiles)); i++ {
+		idx = loadedProjectiles[i]
+
+		// Check if the projectile is of a specific friendliness and within a radius
+		if projectiles[idx].friendly == friendliness && projectiles[idx].phys.pos.Sub(point).Len() < radius {
+			inside = append(inside, i)
 			count++
 		}
 	}
@@ -149,37 +168,32 @@ func updateProjectiles() {
 	if gunCooldown > 0 {
 		gunCooldown--
 	}
-	if !projectilesLoaded {
-		return
-	}
 
-	projectilesLoaded = false
-	for i := 0; i < BULLET_ALLOC_SIZE; i++ {
-		if !projectiles[i].loaded {
-			continue
-		} else if inBounds(projectiles[i].phys.pos, zeroBorder) != pixel.ZV {
-			projectiles[i].loaded = false
+	var idx uint16
+	for i := 0; i < len(loadedProjectiles); i++ {
+		idx = loadedProjectiles[i]
+
+		// Unload out of bounds projectiles
+		if inBounds(projectiles[idx].phys.pos, zeroBorder) != pixel.ZV {
+			unloadProjectile(idx)
 			continue
 		}
 
-		// Count as loaded projectile
-		projectilesLoaded = true
-
 		// Animation cycle speed
-		if skipFrames(projectiles[i].sprite.cycleSpeed) {
-			if projectiles[i].sprite.cycle == 0 {
-				projectiles[i].sprite.cycle = 1
+		if skipFrames(projectiles[idx].sprite.cycleSpeed) {
+			if projectiles[idx].sprite.cycle == 0 {
+				projectiles[idx].sprite.cycle = 1
 			} else {
-				projectiles[i].sprite.cycle = 0
+				projectiles[idx].sprite.cycle = 0
 			}
 		}
 
 		// Add velocity to pos
-		projectiles[i].phys.pos = projectiles[i].phys.pos.Add(projectiles[i].phys.vel)
+		projectiles[idx].phys.pos = projectiles[idx].phys.pos.Add(projectiles[idx].phys.vel)
 
 		// Draw projectile
-		projectile := pixel.NewSprite(projectileSheet, projectiles[i].sprite.pos[projectiles[0].sprite.cycle])
-		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].sprite.scale).Moved(projectiles[i].phys.pos))
+		projectile := pixel.NewSprite(projectileSheet, projectiles[idx].sprite.pos[projectiles[0].sprite.cycle])
+		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[idx].sprite.scale).Moved(projectiles[idx].phys.pos))
 
 	}
 
