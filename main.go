@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -24,10 +25,15 @@ var borderRanges = [3]float64{400, 150, 70}
 var zeroBorder = [3]float64{0, 0, 0}
 var frameCount int
 
-var rollCooldown int
-var globalVelocity float64 = 5
-var globalAcceleration = [2]float64{1.4, 0.6}
-var currentLevel uint8
+var (
+	rollCooldown int
+	gunCooldown  int
+	reloadDelay  int = 4
+
+	globalVelocity float64 = 5
+	globalAcc              = [2]float64{1.4, 0.6}
+	currentLevel   uint8
+)
 
 // Input direction vector lookup table
 var inputVec = [4]pixel.Vec{
@@ -53,6 +59,7 @@ type circularHitbox struct {
 type player struct {
 	phys   physObj
 	hitbox circularHitbox
+	power  uint8
 	sprite spriteSheet
 }
 
@@ -89,6 +96,7 @@ func run() {
 			radius: 12,
 			offset: pixel.ZV,
 		},
+		power:  255,
 		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 2),
 	}
 
@@ -108,13 +116,14 @@ func run() {
 	pauseText.Color = mainColor
 	fmt.Fprintln(pauseText, "Paused")
 
-	// temp add enemy
-	enemies[0] = enemyTypes[0]
-	enemies[0].phys.pos = win.Bounds().Center()
-	enemies[0].sprite.cycleSpeed = 30
+	// temp add enemy asteroid for testing
+	loadEnemy(0, win.Bounds().Center(), pixel.ZV)
 
 	var (
 		paused bool
+
+		frames int
+		second = time.Tick(time.Second)
 	)
 
 	for !win.Closed() {
@@ -186,6 +195,14 @@ func run() {
 		// Update window
 		win.Update()
 
+		frames++
+		select {
+		case <-second:
+			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, frames))
+			frames = 0
+		default:
+		}
+
 	}
 }
 
@@ -217,7 +234,7 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec, rollButton bool) phy
 		}
 
 		counterAcceleration := ship.acc * BOUNDARY_STRENGTH
-		globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * globalAcceleration[globalAccIdx]))
+		globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * globalAcc[globalAccIdx]))
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
 
 		if borderCollisions.X == -1 {

@@ -10,9 +10,6 @@ const ONYX_CLUSTER_RADIUS float64 = 30
 const ONYX_COOLDOWN int = 60
 
 var (
-	reloadDelay int = 4
-	gunCooldown int = 0
-
 	// Projectile Allocation
 	projectiles [BULLET_ALLOC_SIZE]projectile
 	loadedProj  []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
@@ -95,33 +92,24 @@ func loadProjectileSpritePos() {
 	}
 }
 
-// Find the first unloaded projectile slot
-func firstFreeSlot() uint16 {
-	for i := uint16(0); i < BULLET_ALLOC_SIZE; i++ {
-		if !projectiles[i].loaded {
-			return i
-		}
-	}
-
-	return BULLET_ALLOC_SIZE
-}
-
 // Load a new projectile if there is space
 func loadProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
-	slot := firstFreeSlot()
+	// Find first free slot
+	slot := uint16(0)
+	for ; slot < BULLET_ALLOC_SIZE; slot++ {
+		if projectiles[slot].loaded {
+			continue
+		}
+		// Fill in slot
+		projectiles[slot] = projectileTypes[projType]
+		projectiles[slot].phys.pos = pos
+		projectiles[slot].phys.vel = vel
 
-	// Return if there are no slots
-	if slot >= BULLET_ALLOC_SIZE {
+		// Add projectile to the loaded list
+		loadedProj = append(loadedProj, slot)
+
 		return
 	}
-
-	// Fill in slot
-	projectiles[slot] = projectileTypes[projType]
-	projectiles[slot].phys.pos = pos
-	projectiles[slot].phys.vel = vel
-
-	// Add projectile to the loaded list
-	loadedProj = append(loadedProj, slot)
 }
 
 // Unload projectiles
