@@ -206,22 +206,32 @@ func run() {
 // Draw ship to the screen
 func drawShip(ship *player) {
 	var spriteID uint16 = 1
-	if input.dir.Y != 0 {
-		if input.dir.Y < 0 {
-			spriteID = 0
-		} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
-			spriteID = 2
-		} else {
-			spriteID = 3
+	if rollCooldown == 0 {
+		if input.dir.Y != 0 {
+			if input.dir.Y < 0 {
+				spriteID = 0
+			} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
+				spriteID = 2
+			} else {
+				spriteID = 3
+			}
 		}
-	}
 
-	if math.Abs(input.dir.X) > AXIS_DEADZONE {
-		if ship.phys.vel.X > 0 {
-			spriteID = 5
-		} else {
-			spriteID = 4
+		if math.Abs(input.dir.X) > AXIS_DEADZONE {
+			if input.dir.X > 0 {
+				spriteID = 4
+			} else {
+				spriteID = 7
+			}
 		}
+	} else {
+		seg := ROLL_COOLDOWN / 5
+		var rollDir int = -1
+		if ship.phys.vel.X > 0 {
+			rollDir = 1
+		}
+
+		spriteID = 4 + uint16(rollCooldown/seg*rollDir&3)
 	}
 
 	drawSprite(&ship.sprite, ship.phys.pos, spriteID)
