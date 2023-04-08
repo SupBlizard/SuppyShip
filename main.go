@@ -18,30 +18,31 @@ const AXIS_DEADZONE float64 = 0.1
 const DEFAULT_GLOBAL_VELOCITY float64 = 10
 const ROLL_COOLDOWN int = 20
 
-var WINSIZE pixel.Vec = pixel.V(512, 768)
-
 // Top Bottom Right Left
 var borderRanges = [3]float64{400, 150, 70}
 var zeroBorder = [3]float64{0, 0, 0}
-var frameCount int
+
+var (
+	frameCount     int
+	currentLevel   uint8
+	winsize        pixel.Vec  = pixel.V(512, 768)
+	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
+	globalVelocity float64    = 5
+)
 
 var (
 	rollCooldown int
 	gunCooldown  int
 	reloadDelay  int = 4
 
-	globalVelocity float64 = 5
-	globalAcc              = [2]float64{1.4, 0.6}
-	currentLevel   uint8
+	input       = inputStruct{}
+	inputLookup = [4]pixel.Vec{
+		pixel.V(0, 1),
+		pixel.V(-1, 0),
+		pixel.V(0, -1),
+		pixel.V(1, 0),
+	}
 )
-
-// Input direction vector lookup table
-var inputVec = [4]pixel.Vec{
-	pixel.V(0, 1),
-	pixel.V(-1, 0),
-	pixel.V(0, -1),
-	pixel.V(1, 0),
-}
 
 // Structs
 type physObj struct {
@@ -63,13 +64,19 @@ type player struct {
 	sprite spriteSheet
 }
 
+type inputStruct struct {
+	dir   pixel.Vec
+	shoot bool
+	roll  bool
+}
+
 // Main
 func run() {
 	icon := loadPicture("assets/icon.png")
 	var iconArr = []pixel.Picture{icon}
 	var cfg = pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
-		Bounds: pixel.R(0, 0, WINSIZE.X, WINSIZE.Y),
+		Bounds: pixel.R(0, 0, winsize.X, winsize.Y),
 		VSync:  true,
 		Icon:   iconArr,
 	}
@@ -108,11 +115,11 @@ func run() {
 	generateStars()
 
 	var mainColor = color.RGBA{89, 232, 248, 255}
-	titleText := text.New(pixel.V(50, WINSIZE.Y-100), textAtlas)
+	titleText := text.New(pixel.V(50, winsize.Y-100), textAtlas)
 	titleText.Color = mainColor
 	fmt.Fprintln(titleText, "Suppy Ship")
 
-	pauseText := text.New(pixel.V(50, WINSIZE.Y-50), textAtlas)
+	pauseText := text.New(pixel.V(50, winsize.Y-50), textAtlas)
 	pauseText.Color = mainColor
 	fmt.Fprintln(pauseText, "Paused")
 
@@ -143,37 +150,27 @@ func run() {
 			win.Clear(color.RGBA{0, 0, 0, 0})
 			globalVelocity = DEFAULT_GLOBAL_VELOCITY
 
-			// Handle input
-			inputDirection, shooting, rolling := handleInput(win)
+			// Update frame's input
+			handleInput(win)
 
 			// Rolling
 			sign := signbit(ship.phys.vel.X)
 			if rollCooldown == 0 {
-				if rolling && math.Abs(ship.phys.vel.X) > 0.5 {
+				if input.roll && math.Abs(ship.phys.vel.X) > 0.5 {
 					ship.phys.vel.X += 9 * sign
 					rollCooldown = ROLL_COOLDOWN
 				}
 			} else {
-				inputDirection.X = 0
+				input.dir.X = 0
 				ship.phys.vel.X += 0.3 * sign
 				rollCooldown--
 			}
 
 			// Update ship
-			updateShipPhys(&ship.phys, inputDirection, rolling)
-
-			// Change ship direction sprite
-			ship.sprite.current = 0
-			if math.Abs(inputDirection.X) > AXIS_DEADZONE {
-				if ship.phys.vel.X > 0 {
-					ship.sprite.current = 2
-				} else {
-					ship.sprite.current = 1
-				}
-			}
+			updateShipPhys(&ship.phys)
 
 			// Fire bullets
-			if shooting && gunCooldown == 0 && skipFrames(reloadDelay) {
+			if input.shoot && gunCooldown == 0 && skipFrames(reloadDelay) {
 				fireBullet(ship.phys.pos)
 			}
 
@@ -186,8 +183,7 @@ func run() {
 			// Update Enemies
 			updateEnemies()
 
-			// Draw ship
-			drawSprite(&ship.sprite, ship.phys.pos)
+			drawSprite(&ship.sprite, ship.phys.pos, 0)
 
 			frameCount++
 		}
@@ -207,7 +203,7 @@ func run() {
 }
 
 // Update the ship velocity and position
-func updateShipPhys(ship *physObj, inputDirection pixel.Vec, rollButton bool) {
+func updateShipPhys(ship *physObj) {
 	// Give velocity a minimum limit or apply friction to the velocity if there is any
 	if ship.vel.Len() <= 0.01 {
 		ship.vel = pixel.ZV
@@ -216,8 +212,8 @@ func updateShipPhys(ship *physObj, inputDirection pixel.Vec, rollButton bool) {
 	}
 
 	// Add new velocity if there is input
-	if inputDirection != pixel.ZV {
-		ship.vel = ship.vel.Add(inputDirection)
+	if input.dir != pixel.ZV {
+		ship.vel = ship.vel.Add(input.dir)
 	}
 
 	// Enforce soft boundary on ship
@@ -226,7 +222,7 @@ func updateShipPhys(ship *physObj, inputDirection pixel.Vec, rollButton bool) {
 		var globalAccIdx int
 
 		if borderCollisions.Y == -1 {
-			borderDepth = findBorderDepth(WINSIZE.Y-ship.pos.Y, borderRanges[0])
+			borderDepth = findBorderDepth(winsize.Y-ship.pos.Y, borderRanges[0])
 			globalAccIdx = 0
 		} else if borderCollisions.Y == 1 {
 			borderDepth = findBorderDepth(ship.pos.Y, borderRanges[1])
@@ -238,7 +234,7 @@ func updateShipPhys(ship *physObj, inputDirection pixel.Vec, rollButton bool) {
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
 
 		if borderCollisions.X == -1 {
-			ship.vel.X -= counterAcceleration * findBorderDepth(WINSIZE.X-ship.pos.X, borderRanges[2])
+			ship.vel.X -= counterAcceleration * findBorderDepth(winsize.X-ship.pos.X, borderRanges[2])
 		} else if borderCollisions.X == 1 {
 			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, borderRanges[2])
 		}
@@ -258,12 +254,12 @@ func findBorderDepth(pos float64, borderRange float64) float64 {
 // Check if pos is in bounds
 func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 	var boundCollision pixel.Vec = pixel.ZV
-	if pos.Y >= WINSIZE.Y-boundaryRange[0] {
+	if pos.Y >= winsize.Y-boundaryRange[0] {
 		boundCollision.Y = -1
 	} else if pos.Y <= boundaryRange[1] {
 		boundCollision.Y = 1
 	}
-	if pos.X >= WINSIZE.X-boundaryRange[2] {
+	if pos.X >= winsize.X-boundaryRange[2] {
 		boundCollision.X = -1
 	} else if pos.X <= boundaryRange[2] {
 		boundCollision.X = 1
@@ -273,47 +269,47 @@ func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 }
 
 // Handle user input for a single frame
-func handleInput(win *pixelgl.Window) (pixel.Vec, bool, bool) {
+func handleInput(win *pixelgl.Window) {
 	// Initialize dirVec with joystick pos
-	var dirVec pixel.Vec = pixel.Vec{
+	input.dir = pixel.Vec{
 		X: win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftX),
 		Y: win.JoystickAxis(pixelgl.Joystick1, pixelgl.AxisLeftY) * -1,
 	}
 
 	// Add keyboard input to the direction vector
 	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyW) {
-		dirVec = dirVec.Add(inputVec[0])
+		input.dir = input.dir.Add(inputLookup[0])
 	}
 	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
-		dirVec = dirVec.Add(inputVec[1])
+		input.dir = input.dir.Add(inputLookup[1])
 	}
 	if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyS) {
-		dirVec = dirVec.Add(inputVec[2])
+		input.dir = input.dir.Add(inputLookup[2])
 	}
 	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyD) {
-		dirVec = dirVec.Add(inputVec[3])
+		input.dir = input.dir.Add(inputLookup[3])
 	}
 
 	// Trim directional vector and add deadzone
-	if dirVecLen := dirVec.Len(); dirVecLen > 1 {
-		dirVec = dirVec.Scaled(1 / dirVecLen)
+	if dirVecLen := input.dir.Len(); dirVecLen > 1 {
+		input.dir = input.dir.Scaled(1 / dirVecLen)
 	} else if dirVecLen < AXIS_DEADZONE {
-		dirVec = pixel.ZV
+		input.dir = pixel.ZV
 	}
 
 	// shoot
-	var shootButton bool
 	if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonA) || win.Pressed(pixelgl.KeyP) {
-		shootButton = true
+		input.shoot = true
+	} else {
+		input.shoot = false
 	}
 
 	// Ignore X axis input if rolling
-	var rollButton bool
 	if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonX) || win.JustPressed(pixelgl.KeyO) {
-		rollButton = true
+		input.roll = true
+	} else {
+		input.roll = false
 	}
-
-	return dirVec, shootButton, rollButton
 }
 
 func signbit(x float64) float64 {

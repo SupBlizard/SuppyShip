@@ -32,7 +32,7 @@ func loadStarPhases() {
 func generateStars() {
 	var floatStarAmount float64 = float64(STAR_AMOUNT)
 	var sqrtStarAmount float64 = math.Sqrt(floatStarAmount)
-	var windowRatio float64 = WINSIZE.Y / WINSIZE.X
+	var windowRatio float64 = winsize.Y / winsize.X
 
 	// Get Grid size
 	closestFactor := 1.0
@@ -50,8 +50,8 @@ func generateStars() {
 
 	// Generate stars
 	currentStar := 0
-	for y := 0.0; y < WINSIZE.Y; y += starGridRatio.Y {
-		for x := 0.0; x < WINSIZE.X; x += starGridRatio.X {
+	for y := 0.0; y < winsize.Y; y += starGridRatio.Y {
+		for x := 0.0; x < winsize.X; x += starGridRatio.X {
 			if currentStar >= STAR_AMOUNT {
 				return
 			}
@@ -88,7 +88,7 @@ func updateStars() {
 
 			stars[i].pos.Y -= globalVelocity
 			if stars[i].pos.Y < 0 {
-				stars[i].pos.Y += WINSIZE.Y
+				stars[i].pos.Y += winsize.Y
 			}
 
 			star := pixel.NewSprite(starSheet, starPhases[stars[i].phase])
