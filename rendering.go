@@ -15,7 +15,7 @@ type spriteSheet struct {
 	offset      uint16
 	cycle       uint16
 	cycleNumber uint16
-	cycleSpeed  int
+	cycleSpeed  uint16
 	current     uint16
 	scale       float64
 	sheet       []*pixel.Sprite
@@ -23,7 +23,7 @@ type spriteSheet struct {
 
 // Draw sprites
 func drawSprite(sprite *spriteSheet, pos pixel.Vec) {
-	if frameCount%sprite.cycleSpeed == 0 {
+	if uint16(frameCount)%sprite.cycleSpeed == 0 {
 		sprite.cycle++
 		if sprite.cycle >= sprite.cycleNumber {
 			sprite.cycle = 0
@@ -35,14 +35,14 @@ func drawSprite(sprite *spriteSheet, pos pixel.Vec) {
 }
 
 // Load a spritesheet and return it
-func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64) spriteSheet {
+func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64, cycleSpeed uint16) spriteSheet {
 	sheet := loadPicture(imagePath)
 	sprite := spriteSheet{
 		scale:       scale,
 		offset:      0,
 		cycle:       0,
 		cycleNumber: 0,
-		cycleSpeed:  10,
+		cycleSpeed:  cycleSpeed,
 		current:     0,
 		sheet:       nil,
 	}
