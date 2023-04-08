@@ -23,8 +23,9 @@ var (
 // Structs
 type projectile struct {
 	id       uint8
+	pos      pixel.Vec
+	vel      pixel.Vec
 	name     string
-	phys     physObj
 	loaded   bool
 	friendly bool
 	sprite   projectileSprite
@@ -37,18 +38,12 @@ type projectileSprite struct {
 	pos        [2]pixel.Rect
 }
 
-var shipBulletPhys physObj = physObj{
-	pos: pixel.V(0, 10),
-	vel: pixel.V(0, 12),
-	acc: 0,
-	frc: 0,
-}
-
 var projectileTypes = [4]projectile{
 	{
 		id:       0,
 		name:     "Ship Bullet",
-		phys:     shipBulletPhys,
+		pos:      pixel.V(0, 10),
+		vel:      pixel.V(0, 12),
 		loaded:   true,
 		friendly: true,
 		sprite: projectileSprite{
@@ -60,7 +55,8 @@ var projectileTypes = [4]projectile{
 	{
 		id:       1,
 		name:     "Onyx Bullet",
-		phys:     shipBulletPhys,
+		pos:      pixel.V(0, 10),
+		vel:      pixel.V(0, 12),
 		loaded:   true,
 		friendly: true,
 		sprite: projectileSprite{
@@ -72,7 +68,8 @@ var projectileTypes = [4]projectile{
 	{
 		id:       2,
 		name:     "Debris",
-		phys:     shipBulletPhys,
+		pos:      pixel.V(0, 10),
+		vel:      pixel.V(0, 12),
 		loaded:   true,
 		friendly: false,
 		sprite: projectileSprite{
@@ -93,17 +90,16 @@ func loadProjectileSpritePos() {
 }
 
 // Load a new projectile if there is space
-func loadProjectile(projType int, pos pixel.Vec, vel pixel.Vec) {
+func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
 	// Find first free slot
-	slot := uint16(0)
-	for ; slot < BULLET_ALLOC_SIZE; slot++ {
+	for slot := uint16(0); slot < BULLET_ALLOC_SIZE; slot++ {
 		if projectiles[slot].loaded {
 			continue
 		}
 		// Fill in slot
 		projectiles[slot] = projectileTypes[projType]
-		projectiles[slot].phys.pos = pos
-		projectiles[slot].phys.vel = vel
+		projectiles[slot].pos = pos
+		projectiles[slot].vel = vel
 
 		// Add projectile to the loaded list
 		loadedProj = append(loadedProj, slot)
@@ -134,10 +130,10 @@ func fireBullet(shipPos pixel.Vec) {
 		}
 
 		// Spawn Onyx bullet
-		loadProjectile(1, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
+		loadProjectile(1, shipPos.Add(projectileTypes[1].pos), projectileTypes[1].vel)
 		gunCooldown = ONYX_COOLDOWN
 	} else {
-		loadProjectile(0, shipPos.Add(shipBulletPhys.pos), shipBulletPhys.vel)
+		loadProjectile(0, shipPos.Add(projectileTypes[0].pos), projectileTypes[0].vel)
 	}
 }
 
@@ -148,7 +144,7 @@ func projectilesWithinRadius(point pixel.Vec, radius float64, friendliness bool)
 
 	// Loop through loaded indexes
 	for _, i := range loadedProj {
-		if projectiles[i].friendly == friendliness && projectiles[i].phys.pos.Sub(point).Len() < radius {
+		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
 			inside = append(inside, i)
 			count++
 		}
@@ -166,7 +162,7 @@ func updateProjectiles() {
 	// Loop through loaded indexes
 	for _, i := range loadedProj {
 		// Unload out of bounds projectiles
-		if inBounds(projectiles[i].phys.pos, zeroBorder) != pixel.ZV {
+		if inBounds(projectiles[i].pos, zeroBorder) != pixel.ZV {
 			unloadProjectile(i)
 			continue
 		}
@@ -181,11 +177,11 @@ func updateProjectiles() {
 		}
 
 		// Add velocity to pos
-		projectiles[i].phys.pos = projectiles[i].phys.pos.Add(projectiles[i].phys.vel)
+		projectiles[i].pos = projectiles[i].pos.Add(projectiles[i].vel)
 
 		// Draw projectile
 		projectile := pixel.NewSprite(projectileSheet, projectiles[i].sprite.pos[projectiles[0].sprite.cycle])
-		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].sprite.scale).Moved(projectiles[i].phys.pos))
+		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].sprite.scale).Moved(projectiles[i].pos))
 
 	}
 
