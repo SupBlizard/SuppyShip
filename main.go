@@ -97,7 +97,7 @@ func run() {
 			offset: pixel.ZV,
 		},
 		power:  255,
-		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 2),
+		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
 	}
 
 	// Load projectile sprite positions
@@ -160,7 +160,7 @@ func run() {
 			}
 
 			// Update ship
-			ship.phys = updateShipPhys(ship.phys, inputDirection, rolling)
+			updateShipPhys(&ship.phys, inputDirection, rolling)
 
 			// Change ship direction sprite
 			ship.sprite.current = 0
@@ -207,7 +207,7 @@ func run() {
 }
 
 // Update the ship velocity and position
-func updateShipPhys(ship physObj, inputDirection pixel.Vec, rollButton bool) physObj {
+func updateShipPhys(ship *physObj, inputDirection pixel.Vec, rollButton bool) {
 	// Give velocity a minimum limit or apply friction to the velocity if there is any
 	if ship.vel.Len() <= 0.01 {
 		ship.vel = pixel.ZV
@@ -248,8 +248,6 @@ func updateShipPhys(ship physObj, inputDirection pixel.Vec, rollButton bool) phy
 	if ship.vel.Len() != 0 {
 		ship.pos = ship.pos.Add(ship.vel)
 	}
-
-	return ship
 }
 
 // Calculate how far into the border something is
