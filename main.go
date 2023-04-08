@@ -183,7 +183,8 @@ func run() {
 			// Update Enemies
 			updateEnemies()
 
-			drawSprite(&ship.sprite, ship.phys.pos, 0)
+			// Draw ship
+			drawShip(&ship)
 
 			frameCount++
 		}
@@ -200,6 +201,30 @@ func run() {
 		}
 
 	}
+}
+
+// Draw ship to the screen
+func drawShip(ship *player) {
+	var spriteID uint16 = 1
+	if input.dir.Y != 0 {
+		if input.dir.Y < 0 {
+			spriteID = 0
+		} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
+			spriteID = 2
+		} else {
+			spriteID = 3
+		}
+	}
+
+	if math.Abs(input.dir.X) > AXIS_DEADZONE {
+		if ship.phys.vel.X > 0 {
+			spriteID = 5
+		} else {
+			spriteID = 4
+		}
+	}
+
+	drawSprite(&ship.sprite, ship.phys.pos, spriteID)
 }
 
 // Update the ship velocity and position
