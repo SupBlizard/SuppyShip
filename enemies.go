@@ -35,7 +35,7 @@ var enemyTypes = []enemy{
 			offset: pixel.ZV,
 		},
 		health: 5,
-		sprite: loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3),
+		sprite: loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
 		name:   "Asteroid",
 		id:     0,
 	},
@@ -99,6 +99,5 @@ func asteroid(ast *enemy, index uint8) {
 		}
 	}
 	// TODO: Make sprite stages dynamic to health
-	ast.sprite.current = ast.health - 1
-	drawSprite(&ast.sprite, ast.phys.pos)
+	drawSprite(&ast.sprite, ast.phys.pos, ast.health-1)
 }
