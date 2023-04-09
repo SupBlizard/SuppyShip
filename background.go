@@ -1,20 +1,19 @@
 package main
 
 import (
-	"math"
 	"math/rand"
 
 	"github.com/faiface/pixel"
 )
 
-const STAR_AMOUNT int = 80
 const STAR_MAX_PHASE int = 5
 
 var starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
 var starBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, starSheet)
 var starSize pixel.Vec = pixel.V(5, 5)
-var stars [STAR_AMOUNT]star
 var starPhases [STAR_MAX_PHASE + 1]pixel.Rect
+var starDistance pixel.Vec = pixel.V(90, 90)
+var stars []star = make([]star, 0, 128)
 
 type star struct {
 	pos   pixel.Vec
@@ -30,39 +29,31 @@ func loadStarPhases() {
 }
 
 func generateStars() {
-	var floatStarAmount float64 = float64(STAR_AMOUNT)
-	var sqrtStarAmount float64 = math.Sqrt(floatStarAmount)
-	var windowRatio float64 = winsize.Y / winsize.X
-
-	// Get Grid size
-	closestFactor := 1.0
-	closestRatio := floatStarAmount
-	for i := 1.0; floatStarAmount/i > sqrtStarAmount; i *= 2 {
-		currentRatio := floatStarAmount / math.Pow(i, 2)
-		if math.Abs(currentRatio-windowRatio) < closestRatio {
-			closestRatio = currentRatio
-			closestFactor = i
-		}
-	}
-
-	// TODO: Need to calculate the optimal scalar (currently hardcoded)
-	starGridRatio := pixel.V(closestFactor, floatStarAmount/closestFactor).Scaled(9)
+	var starNumbers pixel.Vec = pixel.V(winsize.X/starDistance.X, winsize.Y/starDistance.Y)
+	starDistance = starDistance.Add(pixel.Vec{
+		X: starNumbers.X - float64(uint8(starNumbers.X)),
+		Y: starNumbers.Y - float64(uint8(starNumbers.Y)),
+	})
 
 	// Generate stars
-	currentStar := 0
-	for y := 0.0; y < winsize.Y; y += starGridRatio.Y {
-		for x := 0.0; x < winsize.X; x += starGridRatio.X {
-			if currentStar >= STAR_AMOUNT {
-				return
-			}
+	var shiftRow bool
+	var shiftAmount float64 = starDistance.X / 2
+	var renderBounds pixel.Vec = pixel.V(starNumbers.X*starDistance.X, starNumbers.Y*starDistance.Y)
+	for y := 0.0; y < renderBounds.Y; y += starDistance.Y {
+		x := 0.0
+		if shiftRow {
+			x = shiftAmount
+		}
 
-			stars[currentStar] = star{
-				pos:   pixel.V(x, y).Add(pixel.V(float64(rand.Int()%80), float64(rand.Int()%80))),
+		shiftRow = !shiftRow
+		for ; x < renderBounds.X; x += starDistance.X {
+
+			//
+			stars = append(stars, star{
+				pos:   pixel.V(x, y).Add(pixel.V(float64(rand.Int()%50), float64(rand.Int()%50))),
 				phase: rand.Int() % 6,
 				shine: 1,
-			}
-
-			currentStar++
+			})
 		}
 	}
 }
@@ -80,7 +71,7 @@ func updateStarPhase(star int) {
 func updateStars() {
 	if skipFrames(2) {
 		starBatch.Clear()
-		for i := 0; i < STAR_AMOUNT; i++ {
+		for i := 0; i < len(stars); i++ {
 
 			if skipFrames(4) {
 				updateStarPhase(i)
