@@ -23,7 +23,6 @@ var (
 	windowBorder = [3]float64{0, 0, 0}
 	forceBorder  = [3]float64{400, 150, 70}
 	spawnBorder  = [3]float64{-300, -50, -100}
-	starBorder   = [3]float64{0, 0, -100}
 )
 
 var (

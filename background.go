@@ -43,8 +43,14 @@ func loadStarPhases() {
 func generateStars() {
 	for y := 0.0; math.Round(y) < winsize.Y; y += starDistance.Y {
 		for x := 0.0; math.Round(x) <= winsize.X; x += starDistance.X {
+			// Ignore positions outside the bounds
+			randomPos := pixel.V(x, y).Add(randomVector(STAR_RANDOMNESS))
+			if inBounds(randomPos, windowBorder) != pixel.ZV {
+				continue
+			}
+
 			stars = append(stars, star{
-				pos:   pixel.V(x, y).Add(pixel.V(randomAxis(STAR_RANDOMNESS), randomAxis(STAR_RANDOMNESS))),
+				pos:   randomPos,
 				phase: rand.Int() % 6,
 				shine: 1,
 			})
@@ -52,8 +58,8 @@ func generateStars() {
 	}
 }
 
-func randomAxis(limit int) float64 {
-	return float64(rand.Int() % limit)
+func randomVector(limit int) pixel.Vec {
+	return pixel.V(float64(rand.Int()%limit), float64(rand.Int()%limit))
 }
 
 func updateStarPhases(stars []star) {
