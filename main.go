@@ -18,9 +18,13 @@ const AXIS_DEADZONE float64 = 0.1
 const DEFAULT_GLOBAL_VELOCITY float64 = 10
 const ROLL_COOLDOWN int = 20
 
-// Top Bottom Right Left
-var borderRanges = [3]float64{400, 150, 70}
-var zeroBorder = [3]float64{0, 0, 0}
+var (
+	// Top Bottom Sides
+	windowBorder = [3]float64{0, 0, 0}
+	forceBorder  = [3]float64{400, 150, 70}
+	spawnBorder  = [3]float64{-300, -50, -100}
+	starBorder   = [3]float64{0, 0, -100}
+)
 
 var (
 	frameCount     int
@@ -252,15 +256,15 @@ func updateShipPhys(ship *physObj) {
 	}
 
 	// Enforce soft boundary on ship
-	if borderCollisions := inBounds(ship.pos, borderRanges); borderCollisions != pixel.ZV {
+	if borderCollisions := inBounds(ship.pos, forceBorder); borderCollisions != pixel.ZV {
 		var borderDepth float64
 		var globalAccIdx int
 
 		if borderCollisions.Y == -1 {
-			borderDepth = findBorderDepth(winsize.Y-ship.pos.Y, borderRanges[0])
+			borderDepth = findBorderDepth(winsize.Y-ship.pos.Y, forceBorder[0])
 			globalAccIdx = 0
 		} else if borderCollisions.Y == 1 {
-			borderDepth = findBorderDepth(ship.pos.Y, borderRanges[1])
+			borderDepth = findBorderDepth(ship.pos.Y, forceBorder[1])
 			globalAccIdx = 1
 		}
 
@@ -269,9 +273,9 @@ func updateShipPhys(ship *physObj) {
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
 
 		if borderCollisions.X == -1 {
-			ship.vel.X -= counterAcceleration * findBorderDepth(winsize.X-ship.pos.X, borderRanges[2])
+			ship.vel.X -= counterAcceleration * findBorderDepth(winsize.X-ship.pos.X, forceBorder[2])
 		} else if borderCollisions.X == 1 {
-			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, borderRanges[2])
+			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, forceBorder[2])
 		}
 	}
 
