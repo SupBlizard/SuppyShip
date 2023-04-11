@@ -83,6 +83,12 @@ func updateEnemies() {
 
 // AI Functions
 func asteroid(ast *enemy, index uint8) {
+	// Despawn enemy if it leaves the spawn border
+	if inBounds(ast.phys.pos, spawnBorder) != pixel.ZV {
+		unloadEnemy(index)
+		return
+	}
+
 	bullets, count := projectilesWithinRadius(ast.phys.pos, ast.hitbox.radius, true)
 	if count > 0 {
 
