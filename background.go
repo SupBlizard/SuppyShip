@@ -9,18 +9,19 @@ import (
 )
 
 const STAR_MAX_PHASE uint8 = 5
+const STAR_PHASES uint8 = (STAR_MAX_PHASE) * 2
 const STAR_DISTANCE float64 = 65
 const STAR_RANDOMNESS int = 60
 const STAR_SIZE float64 = 5
-const STARFIELD_NUMBER int = 2
+const STARFIELD_NUMBER uint8 = 2
 
 var starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
 var starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite
 
-var starFields = [STARFIELD_NUMBER][STAR_MAX_PHASE]*pixel.Sprite{{}, {}}
+var starFields = [STARFIELD_NUMBER][STAR_PHASES]*pixel.Sprite{{}, {}}
 var starfieldPos = [STARFIELD_NUMBER]pixel.Vec{
-	pixel.V(winsize.X/2, winsize.Y/2),
-	pixel.V(winsize.X/2, winsize.Y+winsize.Y/2),
+	pixel.V(winsize.X*0.5, winsize.Y*0.5),
+	pixel.V(winsize.X*0.5, winsize.Y*1.5),
 }
 
 // Adjust star distance to fit screen
@@ -64,10 +65,10 @@ func generateStars() []star {
 }
 
 func loadStarFields() {
-	var stars = [2][]star{generateStars(), generateStars()}
+	var stars = [STARFIELD_NUMBER][]star{generateStars(), generateStars()}
 
-	for i := uint8(0); i < 2; i++ {
-		for j := uint8(0); j < STAR_MAX_PHASE; j++ {
+	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
+		for j := uint8(0); j < STAR_PHASES; j++ {
 
 			starFields[i][j] = renderStars(stars[i])
 			stars[i] = updateStarPhases(stars[i])
@@ -96,19 +97,18 @@ func updateStarPhases(stars []star) []star {
 			stars[i].shine = 1
 		}
 
-		stars[i].phase += 1 * stars[i].shine
+		stars[i].phase += stars[i].shine
 	}
 	return stars
 }
 
 func updateStars() {
-
-	for i := 0; i < STARFIELD_NUMBER; i++ {
-		currentPhase := frameCount / 4 % int(STAR_MAX_PHASE)
+	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
+		currentPhase := (frameCount / 4) % int(STAR_PHASES)
 		if skipFrames(2) {
 			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity))
-			if starfieldPos[i].Y < winsize.Y/2*-1 {
-				starfieldPos[i].Y = winsize.Y + winsize.Y/2
+			if starfieldPos[i].Y < winsize.Y*-0.5 {
+				starfieldPos[i].Y = winsize.Y * 1.5
 			}
 		}
 
