@@ -115,7 +115,7 @@ func run() {
 
 	// Generate the star background
 	loadStarPhases()
-	generateStars()
+	loadStarFields()
 
 	var mainColor = color.RGBA{89, 232, 248, 255}
 	titleText := text.New(pixel.V(50, winsize.Y-100), textAtlas)
