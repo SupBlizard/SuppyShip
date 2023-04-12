@@ -162,7 +162,7 @@ func updateProjectiles() {
 	// Loop through loaded indexes
 	for _, i := range loadedProj {
 		// Unload out of bounds projectiles
-		if inBounds(projectiles[i].pos, zeroBorder) != pixel.ZV {
+		if inBounds(projectiles[i].pos, windowBorder) != pixel.ZV {
 			unloadProjectile(i)
 			continue
 		}
