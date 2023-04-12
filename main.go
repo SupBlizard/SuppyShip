@@ -13,28 +13,26 @@ import (
 )
 
 // Globals
-const BOUNDARY_STRENGTH float64 = 2
-const AXIS_DEADZONE float64 = 0.1
-const DEFAULT_GLOBAL_VELOCITY float64 = 10
-const ROLL_COOLDOWN int = 20
+const (
+	BOUNDARY_STRENGTH       float64 = 2
+	AXIS_DEADZONE           float64 = 0.1
+	DEFAULT_GLOBAL_VELOCITY float64 = 10
+	ROLL_COOLDOWN           uint16  = 20
+)
 
 var (
 	// Top Bottom Sides
 	windowBorder = [3]float64{0, 0, 0}
 	forceBorder  = [3]float64{400, 150, 70}
 	spawnBorder  = [3]float64{-300, -50, -100}
-)
 
-var (
 	frameCount     int
 	currentLevel   uint8
 	winsize        pixel.Vec  = pixel.V(512, 768)
 	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
-	globalVelocity float64    = 5
-)
+	globalVelocity float64    = DEFAULT_GLOBAL_VELOCITY
 
-var (
-	rollCooldown int
+	rollCooldown uint16
 	gunCooldown  int
 	reloadDelay  int = 4
 
@@ -75,13 +73,17 @@ type inputStruct struct {
 
 // Main
 func run() {
-	icon := loadPicture("assets/icon.png")
-	var iconArr = []pixel.Picture{icon}
+
+	start := time.Now()
+	signbit(3)
+	end := time.Now()
+	print(end.Sub(start))
+
 	var cfg = pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
 		Bounds: pixel.R(0, 0, winsize.X, winsize.Y),
+		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
 		VSync:  true,
-		Icon:   iconArr,
 	}
 
 	// Create new window
@@ -157,8 +159,7 @@ func run() {
 			handleInput(win)
 
 			// Rolling
-			sign := signbit(ship.phys.vel.X)
-			if rollCooldown == 0 {
+			if sign := signbit(ship.phys.vel.X); rollCooldown == 0 {
 				if input.roll && math.Abs(ship.phys.vel.X) > 0.5 {
 					ship.phys.vel.X += 9 * sign
 					rollCooldown = ROLL_COOLDOWN
@@ -234,7 +235,7 @@ func drawShip(ship *player) {
 			rollDir = 1
 		}
 
-		spriteID = 4 + uint16(rollCooldown/seg*rollDir&3)
+		spriteID = 4 + uint16(rollCooldown/seg*uint16(rollDir)&3)
 	}
 
 	drawSprite(&ship.sprite, ship.phys.pos, spriteID)
@@ -284,11 +285,6 @@ func updateShipPhys(ship *physObj) {
 	}
 }
 
-// Calculate how far into the border something is
-func findBorderDepth(pos float64, borderRange float64) float64 {
-	return 1 - pos/borderRange
-}
-
 // Check if pos is in bounds
 func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 	var boundCollision pixel.Vec = pixel.ZV
@@ -335,32 +331,27 @@ func handleInput(win *pixelgl.Window) {
 		input.dir = pixel.ZV
 	}
 
-	// shoot
-	if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonA) || win.Pressed(pixelgl.KeyP) {
+	// Shoot
+	if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonRightBumper) || win.Pressed(pixelgl.KeyP) {
 		input.shoot = true
 	} else {
 		input.shoot = false
 	}
 
-	// Ignore X axis input if rolling
-	if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonX) || win.JustPressed(pixelgl.KeyO) {
+	// Roll
+	if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonA) || win.JustPressed(pixelgl.KeyO) {
 		input.roll = true
 	} else {
 		input.roll = false
 	}
 }
 
-func signbit(x float64) float64 {
-	sign := 1.0
-	if math.Signbit(x) {
-		sign = -1.0
-	}
-	return sign
-}
+// Calculate how far into the border something is
+func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/borderRange }
 
-func skipFrames(skip int) bool {
-	return frameCount%skip == 0
-}
+func signbit(x float64) float64 { return x / math.Abs(x) }
 
-// Lonely Main Function :(
+func skipFrames(skip int) bool { return frameCount%skip == 0 }
+
+// Lonely Main Function :( even suppy ignores it ):
 func main() { pixelgl.Run(run) }
