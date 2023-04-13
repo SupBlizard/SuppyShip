@@ -12,39 +12,6 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
-// Globals
-const (
-	BOUNDARY_STRENGTH       float64 = 2
-	AXIS_DEADZONE           float64 = 0.1
-	DEFAULT_GLOBAL_VELOCITY float64 = 10
-	ROLL_COOLDOWN           uint16  = 20
-)
-
-var (
-	// Top Bottom Sides
-	windowBorder = [3]float64{0, 0, 0}
-	forceBorder  = [3]float64{400, 150, 70}
-	spawnBorder  = [3]float64{-300, -50, -100}
-
-	frameCount     int
-	currentLevel   uint8
-	winsize        pixel.Vec  = pixel.V(512, 768)
-	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
-	globalVelocity float64    = DEFAULT_GLOBAL_VELOCITY
-
-	rollCooldown uint16
-	gunCooldown  int
-	reloadDelay  int = 4
-
-	input       = inputStruct{}
-	inputLookup = [4]pixel.Vec{
-		pixel.V(0, 1),
-		pixel.V(-1, 0),
-		pixel.V(0, -1),
-		pixel.V(1, 0),
-	}
-)
-
 // Structs
 type physObj struct {
 	pos pixel.Vec // position
@@ -73,12 +40,6 @@ type inputStruct struct {
 
 // Main
 func run() {
-
-	start := time.Now()
-	signbit(3)
-	end := time.Now()
-	print(end.Sub(start))
-
 	var cfg = pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
 		Bounds: pixel.R(0, 0, winsize.X, winsize.Y),
@@ -285,23 +246,6 @@ func updateShipPhys(ship *physObj) {
 	}
 }
 
-// Check if pos is in bounds
-func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
-	var boundCollision pixel.Vec = pixel.ZV
-	if pos.Y >= winsize.Y-boundaryRange[0] {
-		boundCollision.Y = -1
-	} else if pos.Y <= boundaryRange[1] {
-		boundCollision.Y = 1
-	}
-	if pos.X >= winsize.X-boundaryRange[2] {
-		boundCollision.X = -1
-	} else if pos.X <= boundaryRange[2] {
-		boundCollision.X = 1
-	}
-
-	return boundCollision
-}
-
 // Handle user input for a single frame
 func handleInput(win *pixelgl.Window) {
 	// Initialize dirVec with joystick pos
@@ -345,13 +289,6 @@ func handleInput(win *pixelgl.Window) {
 		input.roll = false
 	}
 }
-
-// Calculate how far into the border something is
-func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/borderRange }
-
-func signbit(x float64) float64 { return x / math.Abs(x) }
-
-func skipFrames(skip int) bool { return frameCount%skip == 0 }
 
 // Lonely Main Function :( even suppy ignores it ):
 func main() { pixelgl.Run(run) }
