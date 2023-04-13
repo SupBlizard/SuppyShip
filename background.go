@@ -10,12 +10,18 @@ import (
 
 // Adjust star distance to fit screen
 var starDistance = pixel.Vec{
-	X: winsize.X / math.Floor(winsize.X/STAR_DISTANCE),
-	Y: winsize.Y / math.Floor(winsize.Y/STAR_DISTANCE),
+	X: WINX / math.Floor(WINX/STAR_DISTANCE),
+	Y: WINY / math.Floor(WINY/STAR_DISTANCE),
+}
+
+var starFields [STARFIELD_NUMBER][STAR_PHASES]*pixel.Sprite
+var starfieldPos = [STARFIELD_NUMBER]pixel.Vec{
+	pixel.V(WINX*0.5, WINY*0.5),
+	pixel.V(WINX*0.5, WINY*1.5),
 }
 
 func loadStarPhases() {
-	for i := uint8(0); i <= STAR_MAX_PHASE; i++ {
+	for i := int8(0); i <= STAR_MAX_PHASE; i++ {
 		phase := float64(i) * STAR_SIZE
 		starSprites[i] = pixel.NewSprite(starSheet, pixel.R(phase, 0, phase+STAR_SIZE, STAR_SIZE))
 	}
@@ -25,7 +31,7 @@ func loadStarFields() {
 	var stars = [STARFIELD_NUMBER][]star{generateStars(), generateStars()}
 
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
-		for j := uint8(0); j < STAR_PHASES; j++ {
+		for j := int8(0); j < STAR_PHASES; j++ {
 
 			starFields[i][j] = renderStars(stars[i])
 			stars[i] = updateStarPhases(stars[i])
@@ -36,17 +42,19 @@ func loadStarFields() {
 // Generate stars
 func generateStars() []star {
 	var stars []star = make([]star, 0, 128)
-	for y := 0.0; math.Round(y) < winsize.Y; y += starDistance.Y {
-		for x := 0.0; math.Round(x) <= winsize.X; x += starDistance.X {
+	for y := 0.0; math.Round(y) < WINY; y += starDistance.Y {
+		for x := 0.0; math.Round(x) <= WINX; x += starDistance.X {
 			// Ignore positions outside the bounds
 			randomPos := pixel.V(x, y).Add(randomVector(STAR_RANDOMNESS))
 			if inBounds(randomPos, windowBorder) != pixel.ZV {
 				continue
 			}
 
+			rnd := int8(rand.Int() % 6)
+
 			stars = append(stars, star{
 				pos:   randomPos,
-				phase: rand.Int() % 6,
+				phase: rnd,
 				shine: 1,
 			})
 		}
@@ -55,9 +63,9 @@ func generateStars() []star {
 }
 
 func renderStars(stars []star) *pixel.Sprite {
-	starfield := pixelgl.NewCanvas(pixel.R(0, 0, winsize.X, winsize.Y))
-	for _, star := range stars {
-		starSprites[star.phase].Draw(starfield, pixel.IM.Scaled(pixel.ZV, 2).Moved(star.pos))
+	starfield := pixelgl.NewCanvas(pixel.R(0, 0, WINX, WINY))
+	for _, cStar := range stars {
+		starSprites[cStar.phase].Draw(starfield, pixel.IM.Scaled(pixel.ZV, 2).Moved(cStar.pos))
 	}
 
 	return pixel.NewSprite(starfield, starfield.Bounds())
@@ -65,7 +73,7 @@ func renderStars(stars []star) *pixel.Sprite {
 
 func updateStarPhases(stars []star) []star {
 	for i := range stars {
-		if stars[i].phase >= int(STAR_MAX_PHASE) {
+		if stars[i].phase >= STAR_MAX_PHASE {
 			stars[i].shine = -1
 		} else if stars[i].phase < 1 {
 			stars[i].shine = 1
@@ -78,11 +86,11 @@ func updateStarPhases(stars []star) []star {
 
 func updateStars() {
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
-		currentPhase := (frameCount / 4) % int(STAR_PHASES)
+		currentPhase := (frameCount / 4) % uint32(STAR_PHASES)
 		if skipFrames(2) {
 			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity))
-			if starfieldPos[i].Y < winsize.Y*-0.5 {
-				starfieldPos[i].Y = winsize.Y * 1.5
+			if starfieldPos[i].Y < WINY*-0.5 {
+				starfieldPos[i].Y = WINY * 1.5
 			}
 		}
 

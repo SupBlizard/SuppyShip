@@ -44,7 +44,7 @@ type enemy struct {
 	health uint16
 	sprite spriteSheet
 	name   string
-	id     int
+	id     uint8
 }
 
 // Circular hitbox Structure
@@ -67,7 +67,7 @@ type projectile struct {
 // Projectile sprite Structure
 type projectileSprite struct {
 	cycle      uint8
-	cycleSpeed int
+	cycleSpeed uint32
 	scale      float64
 	pos        [2]pixel.Rect
 }
@@ -75,6 +75,6 @@ type projectileSprite struct {
 // Background star Structure
 type star struct {
 	pos   pixel.Vec
-	phase int
-	shine int
+	phase int8
+	shine int8
 }

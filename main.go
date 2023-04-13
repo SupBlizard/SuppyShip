@@ -14,12 +14,13 @@ import (
 
 // Window
 var win *pixelgl.Window = nil
+var frameCount uint32
 
 // Main
 func run() {
 	var cfg = pixelgl.WindowConfig{
 		Title:  "Suppy Ship",
-		Bounds: pixel.R(0, 0, winsize.X, winsize.Y),
+		Bounds: pixel.R(0, 0, WINX, WINY),
 		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
 		VSync:  true,
 	}
@@ -58,11 +59,11 @@ func run() {
 	loadStarFields()
 
 	var mainColor = color.RGBA{89, 232, 248, 255}
-	titleText := text.New(pixel.V(50, winsize.Y-100), textAtlas)
+	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
 	titleText.Color = mainColor
 	fmt.Fprintln(titleText, "Suppy Ship")
 
-	pauseText := text.New(pixel.V(50, winsize.Y-50), textAtlas)
+	pauseText := text.New(pixel.V(50, WINY-50), textAtlas)
 	pauseText.Color = mainColor
 	fmt.Fprintln(pauseText, "Paused")
 
@@ -70,7 +71,8 @@ func run() {
 	loadEnemy(0, win.Bounds().Center(), pixel.ZV)
 
 	var (
-		paused bool
+		paused       bool
+		rollCooldown uint16
 
 		frames int
 		second = time.Tick(time.Second)
@@ -126,7 +128,7 @@ func run() {
 			updateEnemies()
 
 			// Draw ship
-			drawShip(&ship)
+			drawShip(&ship, rollCooldown)
 
 			frameCount++
 		}
@@ -146,7 +148,7 @@ func run() {
 }
 
 // Draw ship to the screen
-func drawShip(ship *player) {
+func drawShip(ship *player, rollCooldown uint16) {
 	var spriteID uint16 = 1
 	if rollCooldown == 0 {
 		if input.dir.Y != 0 {
@@ -199,7 +201,7 @@ func updateShipPhys(ship *physObj) {
 		var globalAccIdx int
 
 		if borderCollisions.Y == -1 {
-			borderDepth = findBorderDepth(winsize.Y-ship.pos.Y, forceBorder[0])
+			borderDepth = findBorderDepth(WINY-ship.pos.Y, forceBorder[0])
 			globalAccIdx = 0
 		} else if borderCollisions.Y == 1 {
 			borderDepth = findBorderDepth(ship.pos.Y, forceBorder[1])
@@ -211,7 +213,7 @@ func updateShipPhys(ship *physObj) {
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
 
 		if borderCollisions.X == -1 {
-			ship.vel.X -= counterAcceleration * findBorderDepth(winsize.X-ship.pos.X, forceBorder[2])
+			ship.vel.X -= counterAcceleration * findBorderDepth(WINX-ship.pos.X, forceBorder[2])
 		} else if borderCollisions.X == 1 {
 			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, forceBorder[2])
 		}

@@ -48,9 +48,11 @@ var projectileTypes = [4]projectile{
 
 // Store the projectile sprite positions on the respective projectiles
 func loadProjectileSpritePos() {
-	for y := projectileSheet.Bounds().Min.Y; y < projectileSheet.Bounds().Max.Y; y += projSprSize.Y {
-		for x := projectileSheet.Bounds().Min.X; x < projectileSheet.Bounds().Max.X; x += projSprSize.X {
-			projectileTypes[int(y/projSprSize.Y)].sprite.pos[int(x/projSprSize.X)] = pixel.R(x, y, x+projSprSize.X, y+projSprSize.Y)
+	const SPR_SIZE_X float64 = 6
+	const SPR_SIZE_Y float64 = 16
+	for y := projectileSheet.Bounds().Min.Y; y < projectileSheet.Bounds().Max.Y; y += SPR_SIZE_Y {
+		for x := projectileSheet.Bounds().Min.X; x < projectileSheet.Bounds().Max.X; x += SPR_SIZE_X {
+			projectileTypes[int(y/SPR_SIZE_Y)].sprite.pos[int(x/SPR_SIZE_X)] = pixel.R(x, y, x+SPR_SIZE_X, y+SPR_SIZE_Y)
 		}
 	}
 }
@@ -68,7 +70,7 @@ func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
 		projectiles[slot].vel = vel
 
 		// Add projectile to the loaded list
-		loadedProj = append(loadedProj, slot)
+		loadedProjectiles = append(loadedProjectiles, slot)
 
 		return
 	}
@@ -77,9 +79,9 @@ func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
 // Unload projectiles
 func unloadProjectile(idx uint16) {
 	projectiles[idx].loaded = false
-	for i := 0; i < len(loadedProj); i++ {
-		if loadedProj[i] == idx {
-			loadedProj = append(loadedProj[:i], loadedProj[i+1:]...)
+	for i := 0; i < len(loadedProjectiles); i++ {
+		if loadedProjectiles[i] == idx {
+			loadedProjectiles = append(loadedProjectiles[:i], loadedProjectiles[i+1:]...)
 			return
 		}
 	}
@@ -110,7 +112,7 @@ func updateProjectiles() {
 	}
 
 	// Loop through loaded indexes
-	for _, i := range loadedProj {
+	for _, i := range loadedProjectiles {
 		// Unload out of bounds projectiles
 		if inBounds(projectiles[i].pos, windowBorder) != pixel.ZV {
 			unloadProjectile(i)
@@ -130,8 +132,9 @@ func updateProjectiles() {
 		projectiles[i].pos = projectiles[i].pos.Add(projectiles[i].vel)
 
 		// Draw projectile
-		projectile := pixel.NewSprite(projectileSheet, projectiles[i].sprite.pos[projectiles[0].sprite.cycle])
-		projectile.Draw(projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].sprite.scale).Moved(projectiles[i].pos))
+		pixel.NewSprite(projectileSheet, projectiles[i].sprite.pos[projectiles[0].sprite.cycle]).Draw(
+			projectileBatch, pixel.IM.Scaled(pixel.ZV, projectiles[i].sprite.scale).Moved(projectiles[i].pos),
+		)
 
 	}
 
