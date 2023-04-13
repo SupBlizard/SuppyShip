@@ -2,7 +2,7 @@ package main
 
 import "github.com/faiface/pixel"
 
-// Basic physics values
+// Basic physics struct
 type physObj struct {
 	pos pixel.Vec // position
 	vel pixel.Vec // velocity
@@ -10,7 +10,7 @@ type physObj struct {
 	frc float64   // friction
 }
 
-// Player values
+// Player Struct
 type player struct {
 	phys   physObj
 	hitbox circularHitbox
@@ -18,7 +18,14 @@ type player struct {
 	sprite spriteSheet
 }
 
-// Generic enemy struct
+// Player Inputs
+type inputStruct struct {
+	dir   pixel.Vec
+	shoot bool
+	roll  bool
+}
+
+// Enemy struct
 type enemy struct {
 	phys   physObj
 	loaded bool
@@ -29,15 +36,27 @@ type enemy struct {
 	id     int
 }
 
-// Player Inputs
-type inputStruct struct {
-	dir   pixel.Vec
-	shoot bool
-	roll  bool
-}
-
 // Circular hitbox
 type circularHitbox struct {
 	radius float64
 	offset pixel.Vec
+}
+
+// Projectile structure
+type projectile struct {
+	id       uint8
+	pos      pixel.Vec
+	vel      pixel.Vec
+	name     string
+	loaded   bool
+	friendly bool
+	sprite   projectileSprite
+}
+
+// Projectile sprite
+type projectileSprite struct {
+	cycle      uint8
+	cycleSpeed int
+	scale      float64
+	pos        [2]pixel.Rect
 }

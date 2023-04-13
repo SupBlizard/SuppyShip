@@ -11,8 +11,15 @@ const (
 	BOUNDARY_STRENGTH       float64 = 2
 	AXIS_DEADZONE           float64 = 0.1
 	DEFAULT_GLOBAL_VELOCITY float64 = 10
-	ROLL_COOLDOWN           uint16  = 20
-	ENEMY_ALLOC_SIZE        uint8   = 16
+
+	ROLL_COOLDOWN uint16 = 20
+	ONYX_COOLDOWN int    = 60
+
+	ONYX_CLUSTER_REQUIREMENT uint16  = 7
+	ONYX_CLUSTER_RADIUS      float64 = 30
+
+	ENEMY_ALLOC_SIZE  uint8  = 16
+	BULLET_ALLOC_SIZE uint16 = 256
 )
 
 var (
@@ -34,6 +41,15 @@ var (
 
 	enemies       [ENEMY_ALLOC_SIZE]enemy
 	loadedEnemies []uint8 = make([]uint8, 0, ENEMY_ALLOC_SIZE)
+
+	// Projectile Allocation
+	projectiles [BULLET_ALLOC_SIZE]projectile
+	loadedProj  []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
+
+	// Projectile Rendering related
+	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
+	projectileBatch *pixel.Batch  = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
+	projSprSize     pixel.Vec     = pixel.V(6, 16)
 
 	input       = inputStruct{}
 	inputLookup = [4]pixel.Vec{
@@ -68,4 +84,20 @@ func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 	}
 
 	return boundCollision
+}
+
+// Return all of the projectiles in a certain radius
+func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) ([]uint16, uint16) {
+	var inside []uint16
+	var count uint16 = 0
+
+	// Loop through loaded indexes
+	for _, i := range loadedProj {
+		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
+			inside = append(inside, i)
+			count++
+		}
+	}
+
+	return inside, count
 }

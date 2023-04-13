@@ -72,7 +72,7 @@ func asteroid(ast *enemy, index uint8) {
 		return
 	}
 
-	bullets, count := projectilesWithinRadius(ast.phys.pos, ast.hitbox.radius, true)
+	bullets, count := projectilesInRadius(ast.phys.pos, ast.hitbox.radius, true)
 	if count > 0 {
 
 		if ast.health <= count {

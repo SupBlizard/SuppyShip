@@ -4,40 +4,6 @@ import (
 	"github.com/faiface/pixel"
 )
 
-const BULLET_ALLOC_SIZE uint16 = 256
-const ONYX_CLUSTER_REQUIREMENT uint16 = 7
-const ONYX_CLUSTER_RADIUS float64 = 30
-const ONYX_COOLDOWN int = 60
-
-var (
-	// Projectile Allocation
-	projectiles [BULLET_ALLOC_SIZE]projectile
-	loadedProj  []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
-
-	// Projectile Rendering related
-	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
-	projectileBatch *pixel.Batch  = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
-	projSprSize     pixel.Vec     = pixel.V(6, 16)
-)
-
-// Structs
-type projectile struct {
-	id       uint8
-	pos      pixel.Vec
-	vel      pixel.Vec
-	name     string
-	loaded   bool
-	friendly bool
-	sprite   projectileSprite
-}
-
-type projectileSprite struct {
-	cycle      uint8
-	cycleSpeed int
-	scale      float64
-	pos        [2]pixel.Rect
-}
-
 var projectileTypes = [4]projectile{
 	{
 		id:       0,
@@ -122,7 +88,7 @@ func unloadProjectile(idx uint16) {
 // Fire a new bullet
 func fireBullet(shipPos pixel.Vec) {
 	// Check if an Onyx bullet should be created
-	indicies, count := projectilesWithinRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
+	indicies, count := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
 	if count >= ONYX_CLUSTER_REQUIREMENT {
 		// Unload projectiles used
 		for _, idx := range indicies {
@@ -135,22 +101,6 @@ func fireBullet(shipPos pixel.Vec) {
 	} else {
 		loadProjectile(0, shipPos.Add(projectileTypes[0].pos), projectileTypes[0].vel)
 	}
-}
-
-// Return all of the projectiles within a certain radius around a point
-func projectilesWithinRadius(point pixel.Vec, radius float64, friendliness bool) ([]uint16, uint16) {
-	var inside []uint16
-	var count uint16 = 0
-
-	// Loop through loaded indexes
-	for _, i := range loadedProj {
-		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
-			inside = append(inside, i)
-			count++
-		}
-	}
-
-	return inside, count
 }
 
 // Update the state of each bullet for one frame
