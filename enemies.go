@@ -4,23 +4,6 @@ import (
 	"github.com/faiface/pixel"
 )
 
-const ENEMY_ALLOC_SIZE uint8 = 16
-
-var (
-	enemies       [ENEMY_ALLOC_SIZE]enemy
-	loadedEnemies []uint8 = make([]uint8, 0, ENEMY_ALLOC_SIZE)
-)
-
-type enemy struct {
-	phys   physObj
-	loaded bool
-	hitbox circularHitbox
-	health uint16
-	sprite spriteSheet
-	name   string
-	id     int
-}
-
 var enemyTypes = []enemy{
 	{
 		phys: physObj{

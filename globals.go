@@ -12,6 +12,7 @@ const (
 	AXIS_DEADZONE           float64 = 0.1
 	DEFAULT_GLOBAL_VELOCITY float64 = 10
 	ROLL_COOLDOWN           uint16  = 20
+	ENEMY_ALLOC_SIZE        uint8   = 16
 )
 
 var (
@@ -30,6 +31,9 @@ var (
 	rollCooldown uint16
 	gunCooldown  int
 	reloadDelay  int = 4
+
+	enemies       [ENEMY_ALLOC_SIZE]enemy
+	loadedEnemies []uint8 = make([]uint8, 0, ENEMY_ALLOC_SIZE)
 
 	input       = inputStruct{}
 	inputLookup = [4]pixel.Vec{

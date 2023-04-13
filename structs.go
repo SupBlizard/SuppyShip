@@ -18,6 +18,17 @@ type player struct {
 	sprite spriteSheet
 }
 
+// Generic enemy struct
+type enemy struct {
+	phys   physObj
+	loaded bool
+	hitbox circularHitbox
+	health uint16
+	sprite spriteSheet
+	name   string
+	id     int
+}
+
 // Player Inputs
 type inputStruct struct {
 	dir   pixel.Vec
