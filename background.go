@@ -8,6 +8,12 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 )
 
+// Adjust star distance to fit screen
+var starDistance = pixel.Vec{
+	X: winsize.X / math.Floor(winsize.X/STAR_DISTANCE),
+	Y: winsize.Y / math.Floor(winsize.Y/STAR_DISTANCE),
+}
+
 func loadStarPhases() {
 	for i := uint8(0); i <= STAR_MAX_PHASE; i++ {
 		phase := float64(i) * STAR_SIZE

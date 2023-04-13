@@ -19,9 +19,11 @@ const (
 	ONYX_CLUSTER_REQUIREMENT uint16  = 7
 	ONYX_CLUSTER_RADIUS      float64 = 30
 
+	// Allocation sizes
 	ENEMY_ALLOC_SIZE  uint8  = 16
 	BULLET_ALLOC_SIZE uint16 = 256
 
+	// Stars
 	STAR_MAX_PHASE   uint8   = 5
 	STAR_PHASES      uint8   = (STAR_MAX_PHASE) * 2
 	STAR_DISTANCE    float64 = 65
@@ -31,34 +33,13 @@ const (
 )
 
 var (
-	frameCount   int
-	currentLevel uint8
-	winsize      pixel.Vec = pixel.V(512, 768)
-
-	// Top Bottom Sides
-	windowBorder = [3]float64{0, 0, 0}
-	forceBorder  = [3]float64{400, 150, 70}
-	spawnBorder  = [3]float64{-300, -50, -100}
-
-	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
+	frameCount     int
+	currentLevel   uint8
 	globalVelocity float64    = DEFAULT_GLOBAL_VELOCITY
+	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
+	winsize        pixel.Vec  = pixel.V(512, 768)
 
-	rollCooldown uint16
-	gunCooldown  int
-	reloadDelay  int = 4
-
-	enemies       [ENEMY_ALLOC_SIZE]enemy
-	loadedEnemies []uint8 = make([]uint8, 0, ENEMY_ALLOC_SIZE)
-
-	// Projectile Allocation
-	projectiles [BULLET_ALLOC_SIZE]projectile
-	loadedProj  []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
-
-	// Projectile Rendering related
-	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
-	projectileBatch *pixel.Batch  = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
-	projSprSize     pixel.Vec     = pixel.V(6, 16)
-
+	// Input
 	input       = inputStruct{}
 	inputLookup = [4]pixel.Vec{
 		pixel.V(0, 1),
@@ -67,18 +48,38 @@ var (
 		pixel.V(1, 0),
 	}
 
-	starSheet    pixel.Picture = loadPicture("assets/star-spritesheet.png")
-	starSprites  [STAR_MAX_PHASE + 1]*pixel.Sprite
+	rollCooldown uint16
+	gunCooldown  int
+	reloadDelay  int = 4
+
+	// Border values (top, bottom, sides)
+	windowBorder = [3]float64{0, 0, 0}
+	forceBorder  = [3]float64{400, 150, 70}
+	spawnBorder  = [3]float64{-300, -50, -100}
+
+	// Allocation
+	enemies     [ENEMY_ALLOC_SIZE]enemy
+	projectiles [BULLET_ALLOC_SIZE]projectile
+
+	// Loaded objects
+	loadedEnemies []uint8  = make([]uint8, 0, ENEMY_ALLOC_SIZE)
+	loadedProj    []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
+
+	// Spritesheets
+	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
+	starSheet       pixel.Picture = loadPicture("assets/star-spritesheet.png")
+
+	// Sprites & Batches
+	projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
+	starSprites     [STAR_MAX_PHASE + 1]*pixel.Sprite
+
+	projSprSize pixel.Vec = pixel.V(6, 16)
+
+	// Star stuff
 	starFields   = [STARFIELD_NUMBER][STAR_PHASES]*pixel.Sprite{{}, {}}
 	starfieldPos = [STARFIELD_NUMBER]pixel.Vec{
 		pixel.V(winsize.X*0.5, winsize.Y*0.5),
 		pixel.V(winsize.X*0.5, winsize.Y*1.5),
-	}
-
-	// Adjust star distance to fit screen
-	starDistance = pixel.Vec{
-		X: winsize.X / math.Floor(winsize.X/STAR_DISTANCE),
-		Y: winsize.Y / math.Floor(winsize.Y/STAR_DISTANCE),
 	}
 )
 
