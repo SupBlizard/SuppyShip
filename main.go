@@ -12,32 +12,6 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
-// Structs
-type physObj struct {
-	pos pixel.Vec // position
-	vel pixel.Vec // velocity
-	acc float64   // acceleration
-	frc float64   // friction
-}
-
-type circularHitbox struct {
-	radius float64
-	offset pixel.Vec
-}
-
-type player struct {
-	phys   physObj
-	hitbox circularHitbox
-	power  uint8
-	sprite spriteSheet
-}
-
-type inputStruct struct {
-	dir   pixel.Vec
-	shoot bool
-	roll  bool
-}
-
 // Main
 func run() {
 	var cfg = pixelgl.WindowConfig{
