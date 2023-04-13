@@ -8,38 +8,22 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 )
 
-const STAR_MAX_PHASE uint8 = 5
-const STAR_PHASES uint8 = (STAR_MAX_PHASE) * 2
-const STAR_DISTANCE float64 = 65
-const STAR_RANDOMNESS int = 60
-const STAR_SIZE float64 = 5
-const STARFIELD_NUMBER uint8 = 2
-
-var starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
-var starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite
-
-var starFields = [STARFIELD_NUMBER][STAR_PHASES]*pixel.Sprite{{}, {}}
-var starfieldPos = [STARFIELD_NUMBER]pixel.Vec{
-	pixel.V(winsize.X*0.5, winsize.Y*0.5),
-	pixel.V(winsize.X*0.5, winsize.Y*1.5),
-}
-
-// Adjust star distance to fit screen
-var starDistance = pixel.Vec{
-	X: winsize.X / math.Floor(winsize.X/STAR_DISTANCE),
-	Y: winsize.Y / math.Floor(winsize.Y/STAR_DISTANCE),
-}
-
-type star struct {
-	pos   pixel.Vec
-	phase int
-	shine int
-}
-
 func loadStarPhases() {
 	for i := uint8(0); i <= STAR_MAX_PHASE; i++ {
 		phase := float64(i) * STAR_SIZE
 		starSprites[i] = pixel.NewSprite(starSheet, pixel.R(phase, 0, phase+STAR_SIZE, STAR_SIZE))
+	}
+}
+
+func loadStarFields() {
+	var stars = [STARFIELD_NUMBER][]star{generateStars(), generateStars()}
+
+	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
+		for j := uint8(0); j < STAR_PHASES; j++ {
+
+			starFields[i][j] = renderStars(stars[i])
+			stars[i] = updateStarPhases(stars[i])
+		}
 	}
 }
 
@@ -64,18 +48,6 @@ func generateStars() []star {
 	return stars
 }
 
-func loadStarFields() {
-	var stars = [STARFIELD_NUMBER][]star{generateStars(), generateStars()}
-
-	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
-		for j := uint8(0); j < STAR_PHASES; j++ {
-
-			starFields[i][j] = renderStars(stars[i])
-			stars[i] = updateStarPhases(stars[i])
-		}
-	}
-}
-
 func renderStars(stars []star) *pixel.Sprite {
 	starfield := pixelgl.NewCanvas(pixel.R(0, 0, winsize.X, winsize.Y))
 	for _, star := range stars {
@@ -83,10 +55,6 @@ func renderStars(stars []star) *pixel.Sprite {
 	}
 
 	return pixel.NewSprite(starfield, starfield.Bounds())
-}
-
-func randomVector(limit int) pixel.Vec {
-	return pixel.V(float64(rand.Int()%limit), float64(rand.Int()%limit))
 }
 
 func updateStarPhases(stars []star) []star {

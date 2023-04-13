@@ -71,3 +71,10 @@ type projectileSprite struct {
 	scale      float64
 	pos        [2]pixel.Rect
 }
+
+// Background star
+type star struct {
+	pos   pixel.Vec
+	phase int
+	shine int
+}

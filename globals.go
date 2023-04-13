@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/faiface/pixel"
 )
@@ -20,6 +21,13 @@ const (
 
 	ENEMY_ALLOC_SIZE  uint8  = 16
 	BULLET_ALLOC_SIZE uint16 = 256
+
+	STAR_MAX_PHASE   uint8   = 5
+	STAR_PHASES      uint8   = (STAR_MAX_PHASE) * 2
+	STAR_DISTANCE    float64 = 65
+	STAR_RANDOMNESS  int     = 60
+	STAR_SIZE        float64 = 5
+	STARFIELD_NUMBER uint8   = 2
 )
 
 var (
@@ -58,6 +66,20 @@ var (
 		pixel.V(0, -1),
 		pixel.V(1, 0),
 	}
+
+	starSheet    pixel.Picture = loadPicture("assets/star-spritesheet.png")
+	starSprites  [STAR_MAX_PHASE + 1]*pixel.Sprite
+	starFields   = [STARFIELD_NUMBER][STAR_PHASES]*pixel.Sprite{{}, {}}
+	starfieldPos = [STARFIELD_NUMBER]pixel.Vec{
+		pixel.V(winsize.X*0.5, winsize.Y*0.5),
+		pixel.V(winsize.X*0.5, winsize.Y*1.5),
+	}
+
+	// Adjust star distance to fit screen
+	starDistance = pixel.Vec{
+		X: winsize.X / math.Floor(winsize.X/STAR_DISTANCE),
+		Y: winsize.Y / math.Floor(winsize.Y/STAR_DISTANCE),
+	}
 )
 
 // Calculate how far into the border something is
@@ -68,6 +90,11 @@ func signbit(x float64) float64 { return x / math.Abs(x) }
 
 // Return true when frameCount is a multiple of x
 func skipFrames(x int) bool { return frameCount%x == 0 }
+
+// Return a random vector (without negative numbers)
+func randomVector(limit int) pixel.Vec {
+	return pixel.V(float64(rand.Int()%limit), float64(rand.Int()%limit))
+}
 
 // Check if pos is in bounds
 func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
