@@ -10,6 +10,17 @@ type physObj struct {
 	frc float64   // friction
 }
 
+// Spritesheet
+type spriteSheet struct {
+	offset      uint16
+	cycle       uint16
+	cycleNumber uint16
+	cycleSpeed  uint16
+	current     uint16
+	scale       float64
+	sheet       []*pixel.Sprite
+}
+
 // Player Struct
 type player struct {
 	phys   physObj

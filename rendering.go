@@ -6,20 +6,7 @@ import (
 	"os"
 
 	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/pixelgl"
 )
-
-var win *pixelgl.Window = nil
-
-type spriteSheet struct {
-	offset      uint16
-	cycle       uint16
-	cycleNumber uint16
-	cycleSpeed  uint16
-	current     uint16
-	scale       float64
-	sheet       []*pixel.Sprite
-}
 
 // Draw sprites
 func drawSprite(sprite *spriteSheet, pos pixel.Vec, id uint16) {

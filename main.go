@@ -12,6 +12,9 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
+// Window
+var win *pixelgl.Window = nil
+
 // Main
 func run() {
 	var cfg = pixelgl.WindowConfig{
