@@ -67,12 +67,16 @@ func run() {
 	pauseText.Color = mainColor
 	fmt.Fprintln(pauseText, "Paused")
 
+	powerText := text.New(pixel.V(50, 50), textAtlas)
+	powerText.Color = mainColor
+
 	// temp add enemy asteroid for testing
 	loadEnemy(0, win.Bounds().Center(), pixel.ZV)
 
 	var (
-		paused       bool
-		rollCooldown uint16
+		paused         bool
+		safetyRecharge bool
+		rollCooldown   uint16
 
 		frames int
 		second = time.Tick(time.Second)
@@ -114,8 +118,13 @@ func run() {
 			updateShipPhys(&ship.phys)
 
 			// Fire bullets
-			if input.shoot && gunCooldown == 0 && skipFrames(reloadDelay) {
-				fireBullet(ship.phys.pos)
+			if input.shoot && skipFrames(reloadDelay) && !safetyRecharge && gunCooldown == 0 {
+				if ship.power > 5 {
+					fireBullet(ship.phys.pos)
+					ship.power -= 5
+				} else {
+					safetyRecharge = true
+				}
 			}
 
 			// Draw stars
@@ -129,6 +138,18 @@ func run() {
 
 			// Draw ship
 			drawShip(&ship, rollCooldown)
+
+			// Increment Ship power
+			if ship.power < 0xFF && skipFrames(2) {
+				ship.power++
+			}
+			if safetyRecharge && ship.power > 30 {
+				safetyRecharge = false
+			}
+
+			fmt.Fprintln(powerText, ship.power)
+			powerText.Draw(win, pixel.IM.Scaled(powerText.Orig, 2))
+			powerText.Clear()
 
 			frameCount++
 		}
