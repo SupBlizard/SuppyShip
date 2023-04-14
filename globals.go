@@ -104,15 +104,25 @@ func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 	return boundCollision
 }
 
+// Find load ID
+func findLoadID(loaded []uint16, id uint16) int {
+	for loadID := 0; loadID < len(loadedProjectiles); loadID++ {
+		if loaded[loadID] == id {
+			return loadID
+		}
+	}
+	return -1
+}
+
 // Return all of the projectiles in a certain radius
-func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) ([]uint16, uint16) {
-	var inside []uint16
+func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) ([]int, uint16) {
+	var inside []int
 	var count uint16 = 0
 
 	// Loop through loaded indexes
-	for _, i := range loadedProjectiles {
+	for loadID, i := range loadedProjectiles {
 		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
-			inside = append(inside, i)
+			inside = append(inside, loadID)
 			count++
 		}
 	}

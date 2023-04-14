@@ -83,8 +83,8 @@ func asteroid(ast *enemy, index uint8) {
 		}
 
 		// Unload projectiles that collided
-		for _, idx := range bullets {
-			unloadProjectile(idx)
+		for _, loadID := range bullets {
+			unloadProjectile(loadID)
 		}
 	}
 	// TODO: Make sprite stages dynamic to health
