@@ -22,7 +22,7 @@ const (
 	ONYX_CLUSTER_RADIUS      float64 = 30
 
 	// Allocation sizes
-	ENEMY_ALLOC_SIZE  uint8  = 16
+	ENEMY_ALLOC_SIZE  uint16 = 16
 	BULLET_ALLOC_SIZE uint16 = 256
 
 	// Stars
@@ -61,7 +61,7 @@ var (
 	projectiles [BULLET_ALLOC_SIZE]projectile
 
 	// Loaded objects
-	loadedEnemies     []uint8  = make([]uint8, 0, ENEMY_ALLOC_SIZE)
+	loadedEnemies     []uint16 = make([]uint16, 0, ENEMY_ALLOC_SIZE)
 	loadedProjectiles []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
 
 	// Spritesheets
