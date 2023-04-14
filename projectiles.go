@@ -9,7 +9,7 @@ var projectileTypes = [4]projectile{
 		id:       0,
 		name:     "Ship Bullet",
 		pos:      pixel.V(0, 10),
-		vel:      pixel.V(0, 3),
+		vel:      pixel.V(0, 12),
 		loaded:   true,
 		friendly: true,
 		sprite: projectileSprite{
@@ -22,7 +22,7 @@ var projectileTypes = [4]projectile{
 		id:       1,
 		name:     "Onyx Bullet",
 		pos:      pixel.V(0, 10),
-		vel:      pixel.V(0, 3),
+		vel:      pixel.V(0, 12),
 		loaded:   true,
 		friendly: true,
 		sprite: projectileSprite{
@@ -77,26 +77,25 @@ func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
 }
 
 // Unload projectiles
-func unloadProjectile(idx int) {
-	projectiles[loadedProjectiles[idx]].loaded = false
-	loadedProjectiles[idx] = loadedProjectiles[len(loadedProjectiles)-1]
-	loadedProjectiles = loadedProjectiles[:len(loadedProjectiles)-1]
+func unloadProjectile(idx uint16) {
+	for i := 0; i < len(loadedProjectiles); i++ {
+		if loadedProjectiles[i] == idx {
+			projectiles[loadedProjectiles[i]].loaded = false
+			loadedProjectiles[i] = loadedProjectiles[len(loadedProjectiles)-1]
+			loadedProjectiles = loadedProjectiles[:len(loadedProjectiles)-1]
+			return
+		}
+	}
 }
 
 // Fire a new bullet
 func fireBullet(shipPos pixel.Vec) {
 	// Check if an Onyx bullet should be created
-	indicies, count := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
+	bullets, count := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
 	if count >= ONYX_CLUSTER_REQUIREMENT {
-		// Find projectile IDs to unload
-		var projIDS []uint16 = make([]uint16, 0, ONYX_CLUSTER_REQUIREMENT)
-		for _, loadID := range indicies {
-			projIDS = append(projIDS, loadedProjectiles[loadID])
-		}
-
 		// Unload projectiles used
-		for _, projID := range projIDS {
-			unloadProjectile(findLoadID(loadedProjectiles, projID))
+		for _, projID := range bullets {
+			unloadProjectile(projID)
 		}
 
 		// Spawn Onyx bullet
@@ -114,10 +113,11 @@ func updateProjectiles() {
 	}
 
 	// Loop through loaded indexes
-	for loadID, i := range loadedProjectiles {
+	for _, i := range loadedProjectiles {
 		// Unload out of bounds projectiles
 		if inBounds(projectiles[i].pos, windowBorder) != pixel.ZV {
-			unloadProjectile(loadID)
+			unloadProjectile(i)
+			i -= 1
 			continue
 		}
 

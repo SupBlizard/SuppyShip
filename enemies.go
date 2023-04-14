@@ -45,16 +45,21 @@ func loadEnemy(enemyType int, pos pixel.Vec, vel pixel.Vec) {
 
 // Unload enemies
 func unloadEnemy(idx uint16) {
-	enemies[loadedEnemies[idx]].loaded = false
-	loadedEnemies[idx] = loadedEnemies[len(loadedEnemies)-1]
-	loadedEnemies = loadedEnemies[:len(loadedEnemies)-1]
+	for i := 0; i < len(loadedEnemies); i++ {
+		if loadedEnemies[i] == idx {
+			enemies[loadedEnemies[i]].loaded = false
+			loadedEnemies[i] = loadedEnemies[len(loadedEnemies)-1]
+			loadedEnemies = loadedEnemies[:len(loadedEnemies)-1]
+			return
+		}
+	}
 }
 
 func updateEnemies() {
-	for _, loadID := range loadedEnemies {
-		switch enemies[loadedEnemies[loadID]].id {
+	for _, index := range loadedEnemies {
+		switch enemies[index].id {
 		case 0:
-			asteroid(&enemies[loadedEnemies[loadID]], loadID)
+			asteroid(&enemies[index], index)
 		}
 	}
 }
@@ -75,15 +80,9 @@ func asteroid(ast *enemy, index uint16) {
 			ast.health -= count
 		}
 
-		// Find projectile IDs to unload
-		var projIDS []uint16 = make([]uint16, 0, 16)
-		for _, loadID := range bullets {
-			projIDS = append(projIDS, loadedProjectiles[loadID])
-		}
-
 		// Unload projectiles used
-		for _, projID := range projIDS {
-			unloadProjectile(findLoadID(loadedProjectiles, projID))
+		for _, projID := range bullets {
+			unloadProjectile(projID)
 		}
 	}
 	// TODO: Make sprite stages dynamic to health
