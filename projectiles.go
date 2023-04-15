@@ -7,7 +7,6 @@ import (
 var projectileTypes = [4]projectile{
 	{
 		id:       0,
-		name:     "Ship Bullet",
 		pos:      pixel.V(0, 10),
 		vel:      pixel.V(0, 12),
 		loaded:   true,
@@ -20,7 +19,6 @@ var projectileTypes = [4]projectile{
 	},
 	{
 		id:       1,
-		name:     "Onyx Bullet",
 		pos:      pixel.V(0, 10),
 		vel:      pixel.V(0, 12),
 		loaded:   true,
@@ -33,7 +31,6 @@ var projectileTypes = [4]projectile{
 	},
 	{
 		id:       2,
-		name:     "Debris",
 		pos:      pixel.V(0, 10),
 		vel:      pixel.V(0, 12),
 		loaded:   true,
