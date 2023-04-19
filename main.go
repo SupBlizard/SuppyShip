@@ -139,6 +139,9 @@ func run() {
 			// Draw ship
 			drawShip(&ship, rollCooldown)
 
+			// Draw ship trail
+			updateShipTrail(ship.phys.pos.X)
+
 			// Increment Ship power
 			if ship.power < 0xFF && skipFrames(2) {
 				ship.power++
@@ -177,9 +180,12 @@ func drawShip(ship *player, rollCooldown uint16) {
 				spriteID = 0
 			} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
 				spriteID = 2
+				shipTrail = append(shipTrail, trailPart{pos: ship.phys.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
 			} else {
 				spriteID = 3
+				shipTrail = append(shipTrail, trailPart{pos: ship.phys.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
 			}
+
 		}
 
 		if math.Abs(input.dir.X) > AXIS_DEADZONE {
@@ -244,6 +250,35 @@ func updateShipPhys(ship *physObj) {
 	if ship.vel.Len() != 0 {
 		ship.pos = ship.pos.Add(ship.vel)
 	}
+}
+
+func unloadTrailPart(ID int) {
+	shipTrail[ID] = shipTrail[len(shipTrail)-1]
+	shipTrail = shipTrail[:len(shipTrail)-1]
+}
+
+func updateShipTrail(shipPosX float64) {
+	if len(shipTrail) == 0 {
+		return
+	}
+
+	for i := 0; i < len(shipTrail); i++ {
+		shipTrail[i].mask.A -= 20
+		if shipTrail[i].mask.A < 20 || math.Abs(shipTrail[i].pos.X-shipPosX) > 6 {
+			unloadTrailPart(i)
+			continue
+		}
+
+		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, (globalVelocity - 15)))
+		scale := 2 * (float64(shipTrail[i].mask.A) / 255)
+
+		// Draw trail
+		pixel.NewSprite(trailSpritesheet, trailSpritesheet.Bounds()).Draw(
+			trailBatch, pixel.IM.Scaled(pixel.ZV, scale).Moved(shipTrail[i].pos))
+	}
+
+	trailBatch.Draw(win)
+	trailBatch.Clear()
 }
 
 // Handle user input for a single frame

@@ -1,6 +1,10 @@
 package main
 
-import "github.com/faiface/pixel"
+import (
+	"image/color"
+
+	"github.com/faiface/pixel"
+)
 
 // Basic physics Structure
 type physObj struct {
@@ -76,4 +80,9 @@ type star struct {
 	pos   pixel.Vec
 	phase int8
 	shine int8
+}
+
+type trailPart struct {
+	pos  pixel.Vec
+	mask color.RGBA
 }

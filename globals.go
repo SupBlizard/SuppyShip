@@ -59,18 +59,23 @@ var (
 	// Allocation
 	enemies     [ENEMY_ALLOC_SIZE]enemy
 	projectiles [BULLET_ALLOC_SIZE]projectile
+	shipTrail   []trailPart = make([]trailPart, 0, 128)
 
 	// Loaded objects
 	loadedEnemies     []uint16 = make([]uint16, 0, ENEMY_ALLOC_SIZE)
 	loadedProjectiles []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
 
 	// Spritesheets
-	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
-	starSheet       pixel.Picture = loadPicture("assets/star-spritesheet.png")
+	projectileSheet  pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
+	trailSpritesheet pixel.Picture = loadPicture("assets/trail.png")
+	starSheet        pixel.Picture = loadPicture("assets/star-spritesheet.png")
 
-	// Sprites & Batches
+	// Batches
+	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSpritesheet)
 	projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
-	starSprites     [STAR_MAX_PHASE + 1]*pixel.Sprite
+
+	// Sprites
+	starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite
 )
 
 // Calculate how far into the border something is
