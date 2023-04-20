@@ -38,7 +38,6 @@ func unloadEnemy(idx uint16) {
 
 func updateEnemies() {
 	for i := len(enemies) - 1; i > -1; i-- {
-		println(enemies)
 		switch enemies[i].id {
 		case 0:
 			asteroid(&enemies[i], uint16(i))

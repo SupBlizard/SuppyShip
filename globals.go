@@ -22,8 +22,8 @@ const (
 	ONYX_CLUSTER_RADIUS      float64 = 30
 
 	// Allocation sizes
-	ENEMY_ALLOC_SIZE  uint16 = 16
-	BULLET_ALLOC_SIZE uint16 = 256
+	ENEMY_ALLOC_SIZE uint16 = 16
+	PROJ_ALLOC_SIZE  uint16 = 256
 
 	// Stars
 	STAR_MAX_PHASE   int8    = 5
@@ -57,7 +57,7 @@ var (
 	spawnBorder  = [3]float64{-300, -50, -100}
 
 	// Allocation
-	projectiles []projectile = make([]projectile, 0, BULLET_ALLOC_SIZE)
+	projectiles []projectile = make([]projectile, 0, PROJ_ALLOC_SIZE)
 	enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
 	shipTrail   []trailPart  = make([]trailPart, 0, 64)
 

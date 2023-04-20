@@ -53,7 +53,7 @@ func loadProjectileSpritePos() {
 
 // Load a new projectile if there is space
 func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
-	if projlen := uint16(len(projectiles)); projlen < BULLET_ALLOC_SIZE {
+	if projlen := uint16(len(projectiles)); projlen < PROJ_ALLOC_SIZE {
 		projectiles = append(projectiles, projectileTypes[projType])
 		projectiles[projlen].pos = pos
 		projectiles[projlen].vel = vel
