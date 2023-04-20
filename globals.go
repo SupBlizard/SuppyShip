@@ -57,13 +57,12 @@ var (
 	spawnBorder  = [3]float64{-300, -50, -100}
 
 	// Allocation
-	enemies     [ENEMY_ALLOC_SIZE]enemy
-	projectiles [BULLET_ALLOC_SIZE]projectile
-	shipTrail   []trailPart = make([]trailPart, 0, 128)
+	projectiles []projectile = make([]projectile, 0, BULLET_ALLOC_SIZE)
+	shipTrail   []trailPart  = make([]trailPart, 0, 64)
 
-	// Loaded objects
-	loadedEnemies     []uint16 = make([]uint16, 0, ENEMY_ALLOC_SIZE)
-	loadedProjectiles []uint16 = make([]uint16, 0, BULLET_ALLOC_SIZE)
+	//enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
+	enemies       [ENEMY_ALLOC_SIZE]enemy
+	loadedEnemies = make([]uint16, 0, ENEMY_ALLOC_SIZE)
 
 	// Spritesheets
 	projectileSheet  pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
@@ -115,9 +114,9 @@ func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) ([]
 	var count uint16 = 0
 
 	// Loop through loaded indexes
-	for _, i := range loadedProjectiles {
+	for i := len(projectiles) - 1; i > 0; i-- {
 		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
-			inside = append(inside, i)
+			inside = append(inside, uint16(i))
 			count++
 		}
 	}

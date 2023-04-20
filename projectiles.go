@@ -56,32 +56,24 @@ func loadProjectileSpritePos() {
 
 // Load a new projectile if there is space
 func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
-	// Find first free slot
-	for slot := uint16(0); slot < BULLET_ALLOC_SIZE; slot++ {
-		if projectiles[slot].loaded {
-			continue
-		}
-		// Fill in slot
-		projectiles[slot] = projectileTypes[projType]
-		projectiles[slot].pos = pos
-		projectiles[slot].vel = vel
-
-		// Add projectile to the loaded list
-		loadedProjectiles = append(loadedProjectiles, slot)
-
-		return
+	if projlen := uint16(len(projectiles)); projlen < BULLET_ALLOC_SIZE {
+		projectiles = append(projectiles, projectileTypes[projType])
+		projectiles[projlen].pos = pos
+		projectiles[projlen].vel = vel
 	}
 }
 
 // Unload projectiles
 func unloadProjectile(idx uint16) {
-	for i := 0; i < len(loadedProjectiles); i++ {
-		if loadedProjectiles[i] == idx {
-			projectiles[loadedProjectiles[i]].loaded = false
-			loadedProjectiles[i] = loadedProjectiles[len(loadedProjectiles)-1]
-			loadedProjectiles = loadedProjectiles[:len(loadedProjectiles)-1]
-			return
-		}
+	projectiles[idx] = projectiles[len(projectiles)-1]
+	projectiles = projectiles[:len(projectiles)-1]
+}
+
+// Unload a whole slice of projectiles (indicies must be in descending order)
+func unloadMany(indicies []uint16) {
+	for _, idx := range indicies {
+		projectiles[idx] = projectiles[len(projectiles)-1]
+		projectiles = projectiles[:len(projectiles)-1]
 	}
 }
 
@@ -91,9 +83,7 @@ func fireBullet(shipPos pixel.Vec) {
 	bullets, count := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
 	if count >= ONYX_CLUSTER_REQUIREMENT {
 		// Unload projectiles used
-		for _, projID := range bullets {
-			unloadProjectile(projID)
-		}
+		unloadMany(bullets)
 
 		// Spawn Onyx bullet
 		loadProjectile(1, shipPos.Add(projectileTypes[1].pos), projectileTypes[1].vel)
@@ -108,13 +98,15 @@ func updateProjectiles() {
 	if gunCooldown > 0 {
 		gunCooldown--
 	}
+	if len(projectiles) == 0 {
+		return
+	}
 
 	// Loop through loaded indexes
-	for _, i := range loadedProjectiles {
+	for i := uint16(len(projectiles)) - 1; i > 0; i-- {
 		// Unload out of bounds projectiles
 		if inBounds(projectiles[i].pos, windowBorder) != pixel.ZV {
 			unloadProjectile(i)
-			i -= 1
 			continue
 		}
 
