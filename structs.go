@@ -42,8 +42,10 @@ type inputStruct struct {
 
 // Enemy Structure
 type enemy struct {
-	phys   physObj
-	loaded bool
+	pos    pixel.Vec
+	vel    pixel.Vec
+	acc    float64
+	frc    float64
 	hitbox circularHitbox
 	health uint16
 	sprite spriteSheet
@@ -62,7 +64,6 @@ type projectile struct {
 	id       uint8
 	pos      pixel.Vec
 	vel      pixel.Vec
-	loaded   bool
 	friendly bool
 	sprite   projectileSprite
 }

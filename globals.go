@@ -53,16 +53,13 @@ var (
 
 	// Border values (top, bottom, sides)
 	windowBorder = [3]float64{0, 0, 0}
-	forceBorder  = [3]float64{400, 150, 70}
+	forceBorder  = [3]float64{400, 150, 30}
 	spawnBorder  = [3]float64{-300, -50, -100}
 
 	// Allocation
 	projectiles []projectile = make([]projectile, 0, BULLET_ALLOC_SIZE)
+	enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
 	shipTrail   []trailPart  = make([]trailPart, 0, 64)
-
-	//enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
-	enemies       [ENEMY_ALLOC_SIZE]enemy
-	loadedEnemies = make([]uint16, 0, ENEMY_ALLOC_SIZE)
 
 	// Spritesheets
 	projectileSheet  pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
