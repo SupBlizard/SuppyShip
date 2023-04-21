@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"image/color"
-	"math"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -18,15 +17,15 @@ var frameCount uint32
 
 // Main
 func run() {
-	var cfg = pixelgl.WindowConfig{
-		Title:  "Suppy Ship",
+
+	// Create new window
+	windowPointer, err := pixelgl.NewWindow(pixelgl.WindowConfig{
+		Title:  TITLE,
 		Bounds: pixel.R(0, 0, WINX, WINY),
 		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
 		VSync:  true,
-	}
+	})
 
-	// Create new window
-	windowPointer, err := pixelgl.NewWindow(cfg)
 	win = windowPointer
 	if err != nil {
 		panic(err)
@@ -36,20 +35,6 @@ func run() {
 	var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 	// Initialize player ship
-	ship := player{
-		phys: physObj{
-			pos: win.Bounds().Center(),
-			vel: pixel.ZV,
-			acc: 1.1,
-			frc: 1 - 0.08,
-		},
-		hitbox: circularHitbox{
-			radius: 12,
-			offset: pixel.ZV,
-		},
-		power:  255,
-		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
-	}
 
 	// Load projectile sprite positions
 	loadProjectileSpritePos()
@@ -76,7 +61,6 @@ func run() {
 	var (
 		paused         bool
 		safetyRecharge bool
-		rollCooldown   uint16
 
 		frames int
 		second = time.Tick(time.Second)
@@ -102,25 +86,13 @@ func run() {
 			// Update frame's input
 			handleInput(win)
 
-			// Rolling
-			if sign := signbit(ship.phys.vel.X); rollCooldown == 0 {
-				if input.roll && math.Abs(ship.phys.vel.X) > 0.5 {
-					ship.phys.vel.X += 9 * sign
-					rollCooldown = ROLL_COOLDOWN
-				}
-			} else {
-				input.dir.X = 0
-				ship.phys.vel.X += 0.3 * sign
-				rollCooldown--
-			}
-
 			// Update ship
-			updateShipPhys(&ship.phys)
+			updateShip()
 
 			// Fire bullets
 			if input.shoot && skipFrames(reloadDelay) && !safetyRecharge && gunCooldown == 0 {
 				if ship.power > 5 {
-					fireBullet(ship.phys.pos)
+					fireBullet(ship.pos)
 					ship.power -= 5
 				} else {
 					safetyRecharge = true
@@ -137,10 +109,10 @@ func run() {
 			updateEnemies()
 
 			// Draw ship
-			drawShip(&ship, rollCooldown)
+			drawShip()
 
 			// Draw ship trail
-			updateShipTrail(ship.phys.pos.X)
+			updateShipTrail(ship.pos.X)
 
 			// Increment Ship power
 			if ship.power < 0xFF && skipFrames(2) {
@@ -163,122 +135,12 @@ func run() {
 		frames++
 		select {
 		case <-second:
-			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, frames))
+			win.SetTitle(fmt.Sprintf("%s | FPS: %d", TITLE, frames))
 			frames = 0
 		default:
 		}
 
 	}
-}
-
-// Draw ship to the screen
-func drawShip(ship *player, rollCooldown uint16) {
-	var spriteID uint16 = 1
-	if rollCooldown == 0 {
-		if input.dir.Y != 0 {
-			if input.dir.Y < 0 {
-				spriteID = 0
-			} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
-				spriteID = 2
-				shipTrail = append(shipTrail, trailPart{pos: ship.phys.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
-			} else {
-				spriteID = 3
-				shipTrail = append(shipTrail, trailPart{pos: ship.phys.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
-			}
-
-		}
-
-		if math.Abs(input.dir.X) > AXIS_DEADZONE {
-			if input.dir.X > 0 {
-				spriteID = 4
-			} else {
-				spriteID = 7
-			}
-		}
-	} else {
-		seg := ROLL_COOLDOWN / 5
-		var rollDir int = -1
-		if ship.phys.vel.X > 0 {
-			rollDir = 1
-		}
-
-		spriteID = 4 + uint16(rollCooldown/seg*uint16(rollDir)&3)
-	}
-
-	drawSprite(&ship.sprite, ship.phys.pos, spriteID)
-}
-
-// Update the ship velocity and position
-func updateShipPhys(ship *physObj) {
-	// Give velocity a minimum limit or apply friction to the velocity if there is any
-	if ship.vel.Len() <= 0.01 {
-		ship.vel = pixel.ZV
-	} else {
-		ship.vel = ship.vel.Scaled(ship.frc)
-	}
-
-	// Add new velocity if there is input
-	if input.dir != pixel.ZV {
-		ship.vel = ship.vel.Add(input.dir)
-	}
-
-	// Enforce soft boundary on ship
-	if borderCollisions := inBounds(ship.pos, forceBorder); borderCollisions != pixel.ZV {
-		var borderDepth float64
-		var globalAccIdx int
-
-		if borderCollisions.Y == -1 {
-			borderDepth = findBorderDepth(WINY-ship.pos.Y, forceBorder[0])
-			globalAccIdx = 0
-		} else if borderCollisions.Y == 1 {
-			borderDepth = findBorderDepth(ship.pos.Y, forceBorder[1])
-			globalAccIdx = 1
-		}
-
-		counterAcceleration := ship.acc * BOUNDARY_STRENGTH
-		globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * globalAcc[globalAccIdx]))
-		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
-
-		if borderCollisions.X == -1 {
-			ship.vel.X -= counterAcceleration * findBorderDepth(WINX-ship.pos.X, forceBorder[2])
-		} else if borderCollisions.X == 1 {
-			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, forceBorder[2])
-		}
-	}
-
-	// Add new velocity to the position
-	if ship.vel.Len() != 0 {
-		ship.pos = ship.pos.Add(ship.vel)
-	}
-}
-
-func unloadTrailPart(ID int) {
-	shipTrail[ID] = shipTrail[len(shipTrail)-1]
-	shipTrail = shipTrail[:len(shipTrail)-1]
-}
-
-func updateShipTrail(shipPosX float64) {
-	if len(shipTrail) == 0 {
-		return
-	}
-
-	for i := 0; i < len(shipTrail); i++ {
-		shipTrail[i].mask.A -= 20
-		if shipTrail[i].mask.A < 20 || math.Abs(shipTrail[i].pos.X-shipPosX) > 6 {
-			unloadTrailPart(i)
-			continue
-		}
-
-		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, (globalVelocity - 15)))
-		scale := 2 * (float64(shipTrail[i].mask.A) / 255)
-
-		// Draw trail
-		pixel.NewSprite(trailSpritesheet, trailSpritesheet.Bounds()).Draw(
-			trailBatch, pixel.IM.Scaled(pixel.ZV, scale).Moved(shipTrail[i].pos))
-	}
-
-	trailBatch.Draw(win)
-	trailBatch.Clear()
 }
 
 // Handle user input for a single frame
