@@ -8,6 +8,8 @@ import (
 )
 
 const (
+	TITLE string = "Suppy Ship"
+
 	WINX float64 = 512
 	WINY float64 = 768
 
@@ -48,8 +50,23 @@ var (
 		pixel.V(1, 0),
 	}
 
-	gunCooldown uint16
-	reloadDelay uint32 = 4
+	// Player ship
+	ship = player{
+		pos: pixel.V(WINX/2, 30),
+		vel: pixel.ZV,
+		acc: 1.1,
+		frc: 1 - 0.08,
+		hitbox: circularHitbox{
+			radius: 12,
+			offset: pixel.ZV,
+		},
+		power:  255,
+		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
+	}
+
+	gunCooldown         uint16
+	reloadDelay         uint32 = 4
+	currentRollCooldown uint16
 
 	// Border values (top, bottom, sides)
 	windowBorder = [3]float64{0, 0, 0}

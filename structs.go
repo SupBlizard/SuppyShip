@@ -6,14 +6,6 @@ import (
 	"github.com/faiface/pixel"
 )
 
-// Basic physics Structure
-type physObj struct {
-	pos pixel.Vec // position
-	vel pixel.Vec // velocity
-	acc float64   // acceleration
-	frc float64   // friction
-}
-
 // Spritesheet Structure
 type spriteSheet struct {
 	offset      uint16
@@ -27,7 +19,10 @@ type spriteSheet struct {
 
 // Player Structure
 type player struct {
-	phys   physObj
+	pos    pixel.Vec
+	vel    pixel.Vec
+	acc    float64
+	frc    float64
 	hitbox circularHitbox
 	power  uint8
 	sprite spriteSheet
