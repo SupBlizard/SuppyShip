@@ -88,6 +88,8 @@ func randomVector(limit int32) pixel.Vec {
 	return pixel.V(float64(rand.Int31()%limit), float64(rand.Int31()%limit))
 }
 
+func divFloat(n uint16, d uint16) float64 { return float64(n) / float64(d) }
+
 // Check if pos is in bounds
 func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 	var boundCollision pixel.Vec = pixel.ZV

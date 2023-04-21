@@ -42,15 +42,16 @@ type inputStruct struct {
 
 // Enemy Structure
 type enemy struct {
-	pos    pixel.Vec
-	vel    pixel.Vec
-	acc    float64
-	frc    float64
-	hitbox circularHitbox
-	health uint16
-	sprite spriteSheet
-	name   string
-	id     uint8
+	pos       pixel.Vec
+	vel       pixel.Vec
+	acc       float64
+	frc       float64
+	hitbox    circularHitbox
+	health    uint16
+	maxHealth uint16
+	sprite    spriteSheet
+	name      string
+	id        uint8
 }
 
 // Circular hitbox Structure

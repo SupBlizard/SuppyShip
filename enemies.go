@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math"
+
 	"github.com/faiface/pixel"
 )
 
@@ -11,13 +13,14 @@ var enemyTypes = []enemy{
 		acc: 0,
 		frc: 0,
 		hitbox: circularHitbox{
-			radius: 20,
+			radius: 25,
 			offset: pixel.ZV,
 		},
-		health: 5,
-		sprite: loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
-		name:   "Asteroid",
-		id:     0,
+		health:    10,
+		maxHealth: 10,
+		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
+		name:      "Asteroid",
+		id:        0,
 	},
 }
 
@@ -64,6 +67,6 @@ func asteroid(ast *enemy, index uint16) {
 		// Unload projectiles used
 		unloadMany(bullets)
 	}
-	// TODO: Make sprite stages dynamic to health
-	drawSprite(&ast.sprite, ast.pos, ast.health-1)
+	drawSprite(&ast.sprite, ast.pos, uint16(
+		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
 }
