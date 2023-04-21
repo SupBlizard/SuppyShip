@@ -49,24 +49,28 @@ func updateEnemies() {
 }
 
 // AI Functions
-func asteroid(ast *enemy, index uint16) {
+func asteroid(ast *enemy, idx uint16) {
 	// Despawn enemy if it leaves the spawn border
 	if inBounds(ast.pos, spawnBorder) != pixel.ZV {
-		unloadEnemy(index)
+		unloadEnemy(idx)
 		return
 	}
-
-	bullets, count := projectilesInRadius(ast.pos, ast.hitbox.radius, true)
-	if count > 0 {
-		if ast.health <= count {
-			unloadEnemy(index)
-		} else {
-			ast.health -= count
-		}
-
-		// Unload projectiles used
-		unloadMany(bullets)
-	}
+	enemyHitbox(ast, idx)
 	drawSprite(&ast.sprite, ast.pos, uint16(
 		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
+}
+
+// Process enemy hitbox
+func enemyHitbox(e *enemy, idx uint16) {
+	proj, count := projectilesInRadius(e.pos, e.hitbox.radius, true)
+	if count > 0 {
+		if e.health <= count {
+			unloadEnemy(idx)
+		} else {
+			e.health -= count
+		}
+
+		// Unload projectiles that collided
+		unloadMany(proj)
+	}
 }
