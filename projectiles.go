@@ -9,6 +9,7 @@ var projectileTypes = [4]projectile{
 		id:       0,
 		pos:      pixel.V(0, 10),
 		vel:      pixel.V(0, 12),
+		dmg:      1,
 		friendly: true,
 		sprite: projectileSprite{
 			cycle:      0,
@@ -20,6 +21,7 @@ var projectileTypes = [4]projectile{
 		id:       1,
 		pos:      pixel.V(0, 10),
 		vel:      pixel.V(0, 12),
+		dmg:      5,
 		friendly: true,
 		sprite: projectileSprite{
 			cycle:      0,
@@ -31,6 +33,7 @@ var projectileTypes = [4]projectile{
 		id:       2,
 		pos:      pixel.V(0, 10),
 		vel:      pixel.V(0, 12),
+		dmg:      2,
 		friendly: false,
 		sprite: projectileSprite{
 			cycle:      0,

@@ -65,6 +65,7 @@ type projectile struct {
 	id       uint8
 	pos      pixel.Vec
 	vel      pixel.Vec
+	dmg      uint16
 	friendly bool
 	sprite   projectileSprite
 }
