@@ -39,38 +39,56 @@ func unloadEnemy(idx uint16) {
 	enemies = enemies[:len(enemies)-1]
 }
 
+// Process enemy hitbox
+func enemyHitbox(enemyID uint16) uint16 {
+	bullets, count := projectilesInRadius(enemies[enemyID].pos, enemies[enemyID].hitbox.radius, true)
+	if count == 0 {
+		return 0
+	}
+
+	// Count up total damage
+	var damage uint16
+	for _, projID := range bullets {
+		damage += projectiles[projID].dmg
+	}
+
+	// Unload projectiles that collided
+	unloadMany(bullets)
+
+	return damage
+}
+
+// Update every enemy
 func updateEnemies() {
-	for i := len(enemies) - 1; i > -1; i-- {
+	var lenEnemies uint16 = uint16(len(enemies))
+	for i := lenEnemies - 1; i < lenEnemies; i-- {
+		// Despawn enemy if it leaves the spawn border
+		if inBounds(enemies[i].pos, spawnBorder) != pixel.ZV {
+			unloadEnemy(i)
+			continue
+		}
+
+		// Calculate enemy health
+		var damage uint16 = enemyHitbox(i)
+		if enemies[i].health <= damage {
+			unloadEnemy(i)
+			continue
+		} else if damage != 0 {
+			enemies[i].health -= damage
+		}
+
+		// Process custom enemy code
 		switch enemies[i].id {
 		case 0:
-			asteroid(&enemies[i], uint16(i))
+			asteroid(i)
 		}
 	}
 }
 
 // AI Functions
-func asteroid(ast *enemy, idx uint16) {
-	// Despawn enemy if it leaves the spawn border
-	if inBounds(ast.pos, spawnBorder) != pixel.ZV {
-		unloadEnemy(idx)
-		return
-	}
-	enemyHitbox(ast, idx)
+func asteroid(enemyID uint16) {
+	var ast *enemy = &enemies[enemyID]
+
 	drawSprite(&ast.sprite, ast.pos, uint16(
 		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
-}
-
-// Process enemy hitbox
-func enemyHitbox(e *enemy, idx uint16) {
-	proj, count := projectilesInRadius(e.pos, e.hitbox.radius, true)
-	if count > 0 {
-		if e.health <= count {
-			unloadEnemy(idx)
-		} else {
-			e.health -= count
-		}
-
-		// Unload projectiles that collided
-		unloadMany(proj)
-	}
 }
