@@ -137,12 +137,6 @@ func loadStuff() {
 		panic(err)
 	}
 
-	// Load projectile sprite positions
-	projSpritePos := loadSpritePos(projectileSheet, pixel.V(6, 16))
-	for y := 0; y < len(projSpritePos); y++ {
-		copy(projectileTypes[y].sprite.pos[:], projSpritePos[y])
-	}
-
 	// Generate the star background
 	loadStarPhases()
 	loadStarFields()

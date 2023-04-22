@@ -21,6 +21,16 @@ func drawSprite(sprite *spriteSheet, pos pixel.Vec, id uint16) {
 	sprite.sheet[sprite.current].Draw(win, pixel.IM.Scaled(pixel.ZV, sprite.scale).Moved(pos))
 }
 
+// Get the positions of a sprite to be batched
+func batchSpritePos(ID uint8, sheet pixel.Picture, size pixel.Vec) []pixel.Rect {
+	var positions []pixel.Rect
+	x := sheet.Bounds().Min.X + (size.X * float64(ID))
+	for y := sheet.Bounds().Min.Y; y < sheet.Bounds().Max.Y; y += size.Y {
+		positions = append(positions, pixel.R(x, y, x+size.X, y+size.Y))
+	}
+	return positions
+}
+
 // Load a spritesheet and return it
 func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64, cycleSpeed uint16) spriteSheet {
 	sheet := loadPicture(imagePath)

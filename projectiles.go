@@ -4,7 +4,9 @@ import (
 	"github.com/faiface/pixel"
 )
 
-var projectileTypes = [4]projectile{
+var projSprSize = pixel.V(6, 16)
+
+var projectileTypes = [2]projectile{
 	{
 		id:       0,
 		pos:      pixel.V(0, 10),
@@ -15,6 +17,8 @@ var projectileTypes = [4]projectile{
 			cycle:      0,
 			cycleSpeed: 15,
 			scale:      1,
+
+			pos: [PROJ_SPRITES]pixel.Rect(batchSpritePos(0, projectileSheet, projSprSize)),
 		},
 	},
 	{
@@ -27,18 +31,8 @@ var projectileTypes = [4]projectile{
 			cycle:      0,
 			cycleSpeed: 15,
 			scale:      3,
-		},
-	},
-	{
-		id:       2,
-		pos:      pixel.V(0, 10),
-		vel:      pixel.V(0, 12),
-		dmg:      2,
-		friendly: false,
-		sprite: projectileSprite{
-			cycle:      0,
-			cycleSpeed: 15,
-			scale:      4,
+
+			pos: [PROJ_SPRITES]pixel.Rect(batchSpritePos(1, projectileSheet, projSprSize)),
 		},
 	},
 }
