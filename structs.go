@@ -84,3 +84,12 @@ type trailPart struct {
 	pos  pixel.Vec
 	mask color.RGBA
 }
+
+type debris struct {
+	pos    pixel.Vec
+	vel    pixel.Vec
+	rot    float64
+	rotVel float64
+	scale  float64
+	sprite [3]pixel.Rect
+}

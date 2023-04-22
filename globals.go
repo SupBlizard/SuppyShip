@@ -19,11 +19,13 @@ const (
 	AXIS_DEADZONE           float64 = 0.1
 	DEFAULT_GLOBAL_VELOCITY float64 = 10
 
-	ROLL_COOLDOWN uint16 = 20
-	ONYX_COOLDOWN uint16 = 60
-
+	ROLL_COOLDOWN            uint16  = 20
+	ONYX_COOLDOWN            uint16  = 60
 	ONYX_CLUSTER_REQUIREMENT uint16  = 7
 	ONYX_CLUSTER_RADIUS      float64 = 30
+
+	PROJ_SPRITES   uint8 = 2
+	DEBRIS_SPRITES uint8 = 3
 
 	// Allocation sizes
 	ENEMY_ALLOC_SIZE  uint16 = 16
@@ -79,18 +81,19 @@ var (
 	// Allocation
 	projectiles []projectile = make([]projectile, 0, PROJ_ALLOC_SIZE)
 	enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
-
-	shipTrail []trailPart = make([]trailPart, 0, 64)
+	debrisAlloc []debris     = make([]debris, 0, ENEMY_ALLOC_SIZE)
+	shipTrail   []trailPart  = make([]trailPart, 0, 64)
 
 	// Spritesheets
 	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
 	trailSheet      pixel.Picture = loadPicture("assets/trail.png")
-
-	starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
+	debristSheet    pixel.Picture = loadPicture("assets/debris-spritesheet.png")
+	starSheet       pixel.Picture = loadPicture("assets/star-spritesheet.png")
 
 	// Batches
 	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSheet)
 	projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
+	debrisBatch     *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, debristSheet)
 
 	// Sprites
 	starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite
@@ -111,18 +114,6 @@ func randomVector(limit int32) pixel.Vec {
 }
 
 func divFloat(n uint16, d uint16) float64 { return float64(n) / float64(d) }
-
-// Store the projectile sprite positions on the respective projectiles
-func loadSpritePos(sheet pixel.Picture, size pixel.Vec) [][]pixel.Rect {
-	var positions [][]pixel.Rect
-	for y := sheet.Bounds().Min.Y; y < sheet.Bounds().Max.Y; y += size.Y {
-		positions = append(positions, make([]pixel.Rect, 0, 3))
-		for x := sheet.Bounds().Min.X; x < sheet.Bounds().Max.X; x += size.X {
-			positions[int(y/size.Y)] = append(positions[int(y/size.Y)], pixel.R(x, y, x+size.X, y+size.Y))
-		}
-	}
-	return positions
-}
 
 // Check if pos is in bounds
 func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
