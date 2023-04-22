@@ -13,6 +13,8 @@ const (
 	WINX float64 = 512
 	WINY float64 = 768
 
+	REVOLUTION float64 = math.Pi * 2
+
 	BOUNDARY_STRENGTH       float64 = 2
 	AXIS_DEADZONE           float64 = 0.1
 	DEFAULT_GLOBAL_VELOCITY float64 = 10
@@ -24,8 +26,9 @@ const (
 	ONYX_CLUSTER_RADIUS      float64 = 30
 
 	// Allocation sizes
-	ENEMY_ALLOC_SIZE uint16 = 16
-	PROJ_ALLOC_SIZE  uint16 = 256
+	ENEMY_ALLOC_SIZE  uint16 = 16
+	DEBRIS_ALLOC_SIZE uint16 = 32
+	PROJ_ALLOC_SIZE   uint16 = 256
 
 	// Stars
 	STAR_MAX_PHASE   int8    = 5
@@ -76,15 +79,17 @@ var (
 	// Allocation
 	projectiles []projectile = make([]projectile, 0, PROJ_ALLOC_SIZE)
 	enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
-	shipTrail   []trailPart  = make([]trailPart, 0, 64)
+
+	shipTrail []trailPart = make([]trailPart, 0, 64)
 
 	// Spritesheets
-	projectileSheet  pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
-	trailSpritesheet pixel.Picture = loadPicture("assets/trail.png")
-	starSheet        pixel.Picture = loadPicture("assets/star-spritesheet.png")
+	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
+	trailSheet      pixel.Picture = loadPicture("assets/trail.png")
+
+	starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
 
 	// Batches
-	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSpritesheet)
+	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSheet)
 	projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
 
 	// Sprites
@@ -106,6 +111,18 @@ func randomVector(limit int32) pixel.Vec {
 }
 
 func divFloat(n uint16, d uint16) float64 { return float64(n) / float64(d) }
+
+// Store the projectile sprite positions on the respective projectiles
+func loadSpritePos(sheet pixel.Picture, size pixel.Vec) [][]pixel.Rect {
+	var positions [][]pixel.Rect
+	for y := sheet.Bounds().Min.Y; y < sheet.Bounds().Max.Y; y += size.Y {
+		positions = append(positions, make([]pixel.Rect, 0, 3))
+		for x := sheet.Bounds().Min.X; x < sheet.Bounds().Max.X; x += size.X {
+			positions[int(y/size.Y)] = append(positions[int(y/size.Y)], pixel.R(x, y, x+size.X, y+size.Y))
+		}
+	}
+	return positions
+}
 
 // Check if pos is in bounds
 func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {

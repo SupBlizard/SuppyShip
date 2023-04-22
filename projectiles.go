@@ -43,17 +43,6 @@ var projectileTypes = [4]projectile{
 	},
 }
 
-// Store the projectile sprite positions on the respective projectiles
-func loadProjectileSpritePos() {
-	const SPR_SIZE_X float64 = 6
-	const SPR_SIZE_Y float64 = 16
-	for y := projectileSheet.Bounds().Min.Y; y < projectileSheet.Bounds().Max.Y; y += SPR_SIZE_Y {
-		for x := projectileSheet.Bounds().Min.X; x < projectileSheet.Bounds().Max.X; x += SPR_SIZE_X {
-			projectileTypes[int(y/SPR_SIZE_Y)].sprite.pos[int(x/SPR_SIZE_X)] = pixel.R(x, y, x+SPR_SIZE_X, y+SPR_SIZE_Y)
-		}
-	}
-}
-
 // Load a new projectile if there is space
 func loadProjectile(projType uint8, pos pixel.Vec, vel pixel.Vec) {
 	if projlen := uint16(len(projectiles)); projlen < PROJ_ALLOC_SIZE {

@@ -112,7 +112,7 @@ func updateShipTrail(shipPosX float64) {
 		scale := 2 * (float64(shipTrail[i].mask.A) / 255)
 
 		// Draw trail
-		pixel.NewSprite(trailSpritesheet, trailSpritesheet.Bounds()).Draw(
+		pixel.NewSprite(trailSheet, trailSheet.Bounds()).Draw(
 			trailBatch, pixel.IM.Scaled(pixel.ZV, scale).Moved(shipTrail[i].pos))
 	}
 

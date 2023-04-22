@@ -11,37 +11,17 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
-// Window
+// Core globals
 var win *pixelgl.Window = nil
 var frameCount uint32
 
 // Main
 func run() {
-
-	// Create new window
-	windowPointer, err := pixelgl.NewWindow(pixelgl.WindowConfig{
-		Title:  TITLE,
-		Bounds: pixel.R(0, 0, WINX, WINY),
-		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
-		VSync:  true,
-	})
-
-	win = windowPointer
-	if err != nil {
-		panic(err)
-	}
+	// Self explanatory
+	loadStuff()
 
 	// Load text atlas
 	var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
-
-	// Initialize player ship
-
-	// Load projectile sprite positions
-	loadProjectileSpritePos()
-
-	// Generate the star background
-	loadStarPhases()
-	loadStarFields()
 
 	var mainColor = color.RGBA{89, 232, 248, 255}
 	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
@@ -141,6 +121,31 @@ func run() {
 		}
 
 	}
+}
+
+func loadStuff() {
+	// Create new window
+	windowPointer, err := pixelgl.NewWindow(pixelgl.WindowConfig{
+		Title:  TITLE,
+		Bounds: pixel.R(0, 0, WINX, WINY),
+		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
+		VSync:  true,
+	})
+
+	win = windowPointer
+	if err != nil {
+		panic(err)
+	}
+
+	// Load projectile sprite positions
+	projSpritePos := loadSpritePos(projectileSheet, pixel.V(6, 16))
+	for y := 0; y < len(projSpritePos); y++ {
+		copy(projectileTypes[y].sprite.pos[:], projSpritePos[y])
+	}
+
+	// Generate the star background
+	loadStarPhases()
+	loadStarFields()
 }
 
 // Handle user input for a single frame
