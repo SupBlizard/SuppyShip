@@ -137,9 +137,10 @@ func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) ([]
 	var count uint16 = 0
 
 	// Loop through loaded indexes
-	for i := len(projectiles) - 1; i > 0; i-- {
+	var lenProj uint16 = uint16(len(projectiles))
+	for i := lenProj - 1; i < lenProj; i-- {
 		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
-			inside = append(inside, uint16(i))
+			inside = append(inside, i)
 			count++
 		}
 	}
