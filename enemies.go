@@ -2,7 +2,6 @@ package main
 
 import (
 	"math"
-	"math/rand"
 
 	"github.com/faiface/pixel"
 )
@@ -39,7 +38,7 @@ func loadEnemy(enemyType uint8, pos pixel.Vec, vel pixel.Vec) {
 
 // Unload projectiles
 func unloadEnemy(idx uint16) {
-	fragmentObject(&enemies[idx].frag, uint8(rand.Int31()%3), enemies[idx].pos, enemies[idx].vel)
+	fragmentObject(&enemies[idx].frag, []uint8{}, enemies[idx].pos, enemies[idx].vel)
 	enemies[idx] = enemies[len(enemies)-1]
 	enemies = enemies[:len(enemies)-1]
 }
