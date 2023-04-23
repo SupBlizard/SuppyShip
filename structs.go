@@ -6,33 +6,16 @@ import (
 	"github.com/faiface/pixel"
 )
 
-// Spritesheet Structure
-type spriteSheet struct {
-	offset      uint16
-	cycle       uint16
-	cycleNumber uint16
-	cycleSpeed  uint16
-	current     uint16
-	scale       float64
-	sheet       []*pixel.Sprite
-}
-
 // Player Structure
 type player struct {
 	pos    pixel.Vec
 	vel    pixel.Vec
 	acc    float64
 	frc    float64
-	hitbox circularHitbox
 	power  uint8
+	hitbox circularHitbox
 	sprite spriteSheet
-}
-
-// Player Inputs Structure
-type inputStruct struct {
-	dir   pixel.Vec
-	shoot bool
-	roll  bool
+	frag   fragInfo
 }
 
 // Enemy Structure
@@ -47,12 +30,6 @@ type enemy struct {
 	hitbox    circularHitbox
 	sprite    spriteSheet
 	frag      fragInfo
-}
-
-// Circular hitbox Structure
-type circularHitbox struct {
-	radius float64
-	offset pixel.Vec
 }
 
 // Projectile Structure
@@ -73,18 +50,17 @@ type projectileSprite struct {
 	pos        [2]pixel.Rect
 }
 
-// Background star Structure
-type star struct {
-	pos   pixel.Vec
-	phase int8
-	shine int8
+// A Fragment created upon destruction
+type fragment struct {
+	ID     [2]uint8
+	pos    pixel.Vec
+	vel    pixel.Vec
+	rot    float64
+	rotVel float64
+	scale  float64
 }
 
-type trailPart struct {
-	pos  pixel.Vec
-	mask color.RGBA
-}
-
+// Info about the object's fragments
 type fragInfo struct {
 	ID     uint8
 	frags  uint8
@@ -93,11 +69,38 @@ type fragInfo struct {
 	scale  float64
 }
 
-type fragment struct {
-	ID     [2]uint8
-	pos    pixel.Vec
-	vel    pixel.Vec
-	rot    float64
-	rotVel float64
-	scale  float64
+// Background star Structure
+type star struct {
+	pos   pixel.Vec
+	phase int8
+	shine int8
+}
+
+// Spritesheet Structure
+type spriteSheet struct {
+	offset      uint16
+	cycle       uint16
+	cycleNumber uint16
+	cycleSpeed  uint16
+	current     uint16
+	scale       float64
+	sheet       []*pixel.Sprite
+}
+
+// Player Inputs Structure
+type inputStruct struct {
+	dir   pixel.Vec
+	shoot bool
+	roll  bool
+}
+
+// Circular hitbox Structure
+type circularHitbox struct {
+	radius float64
+	offset pixel.Vec
+}
+
+type trailPart struct {
+	pos  pixel.Vec
+	mask color.RGBA
 }
