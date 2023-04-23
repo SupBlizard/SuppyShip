@@ -5,7 +5,7 @@ import (
 )
 
 var debrisSprSize pixel.Vec = pixel.V(6, 10)
-var debrisSheet pixel.Picture = loadPicture("assets/debris-spritesheet.png")
+var debrisSheet pixel.Picture = loadPicture("assets/fragment-spritesheet.png")
 var debrisSpritePos = [3][3]pixel.Rect{
 	[3]pixel.Rect(batchSpritePos(0, debrisSheet, debrisSprSize)),
 	[3]pixel.Rect(batchSpritePos(1, debrisSheet, debrisSprSize)),

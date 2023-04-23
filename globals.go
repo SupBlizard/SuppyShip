@@ -87,8 +87,7 @@ var (
 	// Spritesheets
 	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
 	trailSheet      pixel.Picture = loadPicture("assets/trail.png")
-
-	starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
+	starSheet       pixel.Picture = loadPicture("assets/star-spritesheet.png")
 
 	// Batches
 	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSheet)
