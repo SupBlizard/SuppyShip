@@ -86,7 +86,8 @@ func updateProjectiles() {
 	}
 
 	// Loop through loaded indexes
-	for i := uint16(len(projectiles)) - 1; i > 0; i-- {
+	var lenProj uint16 = uint16(len(projectiles))
+	for i := lenProj - 1; i < lenProj; i-- {
 		// Unload out of bounds projectiles
 		if inBounds(projectiles[i].pos, windowBorder) != pixel.ZV {
 			unloadProjectile(i)
