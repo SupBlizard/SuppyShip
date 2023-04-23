@@ -38,6 +38,32 @@ func run() {
 	// temp add enemy asteroid for testing
 	loadEnemy(0, win.Bounds().Center(), pixel.ZV)
 
+	// temp fragment testing
+	loadDebris(debris{
+		ID:     [2]uint8{0, 0},
+		pos:    pixel.V(WINX/2.2, 530),
+		vel:    pixel.ZV,
+		rot:    0,
+		rotVel: 0.1,
+		scale:  3,
+	})
+	loadDebris(debris{
+		ID:     [2]uint8{0, 1},
+		pos:    pixel.V(WINX/2, 550),
+		vel:    pixel.ZV,
+		rot:    0,
+		rotVel: 0.04,
+		scale:  3,
+	})
+	loadDebris(debris{
+		ID:     [2]uint8{0, 2},
+		pos:    pixel.V(WINX/1.8, 520),
+		vel:    pixel.ZV,
+		rot:    0,
+		rotVel: -0.07,
+		scale:  3,
+	})
+
 	var (
 		paused         bool
 		safetyRecharge bool
@@ -93,6 +119,9 @@ func run() {
 
 			// Draw ship trail
 			updateShipTrail(ship.pos.X)
+
+			// Update Debris
+			updateDebris()
 
 			// Increment Ship power
 			if ship.power < 0xFF && skipFrames(2) {

@@ -87,13 +87,13 @@ var (
 	// Spritesheets
 	projectileSheet pixel.Picture = loadPicture("assets/projectile-spritesheet.png")
 	trailSheet      pixel.Picture = loadPicture("assets/trail.png")
-	debristSheet    pixel.Picture = loadPicture("assets/debris-spritesheet.png")
-	starSheet       pixel.Picture = loadPicture("assets/star-spritesheet.png")
+
+	starSheet pixel.Picture = loadPicture("assets/star-spritesheet.png")
 
 	// Batches
 	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSheet)
 	projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
-	debrisBatch     *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, debristSheet)
+	debrisBatch     *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, debrisSheet)
 
 	// Sprites
 	starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite

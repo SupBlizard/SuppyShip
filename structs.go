@@ -86,10 +86,10 @@ type trailPart struct {
 }
 
 type debris struct {
+	ID     [2]uint8
 	pos    pixel.Vec
 	vel    pixel.Vec
 	rot    float64
 	rotVel float64
 	scale  float64
-	sprite [3]pixel.Rect
 }
