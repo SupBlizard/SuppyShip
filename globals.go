@@ -57,16 +57,15 @@ var (
 
 	// Player ship
 	ship = player{
-		pos: pixel.V(WINX/2, 30),
-		vel: pixel.ZV,
-		acc: 1.1,
-		frc: 1 - 0.08,
-		hitbox: circularHitbox{
-			radius: 12,
-			offset: pixel.ZV,
-		},
+		pos:    pixel.V(WINX/2, 30),
+		vel:    pixel.ZV,
+		acc:    1.1,
+		frc:    1 - 0.08,
 		power:  255,
+		alive:  true,
+		hitbox: circularHitbox{radius: 12, offset: pixel.ZV},
 		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
+		frag:   fragInfo{ID: 0, frags: 3, power: 0.8, radius: 5, scale: 3},
 	}
 
 	gunCooldown         uint16

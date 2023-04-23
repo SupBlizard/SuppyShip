@@ -63,19 +63,21 @@ func run() {
 			win.Clear(color.RGBA{0, 0, 0, 0})
 			globalVelocity = DEFAULT_GLOBAL_VELOCITY
 
-			// Update frame's input
-			handleInput(win)
+			if ship.alive {
+				// Update frame's input
+				handleInput(win)
 
-			// Update ship
-			updateShip()
+				// Update ship
+				updateShip()
 
-			// Fire bullets
-			if input.shoot && skipFrames(reloadDelay) && !safetyRecharge && gunCooldown == 0 {
-				if ship.power > 5 {
-					fireBullet(ship.pos)
-					ship.power -= 5
-				} else {
-					safetyRecharge = true
+				// Fire bullets
+				if input.shoot && skipFrames(reloadDelay) && !safetyRecharge && gunCooldown == 0 {
+					if ship.power > 5 {
+						fireBullet(ship.pos)
+						ship.power -= 5
+					} else {
+						safetyRecharge = true
+					}
 				}
 			}
 
@@ -89,7 +91,9 @@ func run() {
 			updateEnemies()
 
 			// Draw ship
-			drawShip()
+			if ship.alive {
+				drawShip()
+			}
 
 			// Draw ship trail
 			updateShipTrail(ship.pos.X)

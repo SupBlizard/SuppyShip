@@ -13,6 +13,7 @@ type player struct {
 	acc    float64
 	frc    float64
 	power  uint8
+	alive  bool
 	hitbox circularHitbox
 	sprite spriteSheet
 	frag   fragInfo
