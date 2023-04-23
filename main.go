@@ -39,7 +39,7 @@ func run() {
 	loadEnemy(0, win.Bounds().Center(), pixel.ZV)
 
 	// temp fragment testing
-	loadDebris(debris{
+	loadDebris(fragment{
 		ID:     [2]uint8{0, 0},
 		pos:    pixel.V(WINX/2.2, 530),
 		vel:    pixel.ZV,
@@ -47,7 +47,7 @@ func run() {
 		rotVel: 0.1,
 		scale:  3,
 	})
-	loadDebris(debris{
+	loadDebris(fragment{
 		ID:     [2]uint8{0, 1},
 		pos:    pixel.V(WINX/2, 550),
 		vel:    pixel.ZV,
@@ -55,7 +55,7 @@ func run() {
 		rotVel: 0.04,
 		scale:  3,
 	})
-	loadDebris(debris{
+	loadDebris(fragment{
 		ID:     [2]uint8{0, 2},
 		pos:    pixel.V(WINX/1.8, 520),
 		vel:    pixel.ZV,

@@ -85,7 +85,7 @@ type trailPart struct {
 	mask color.RGBA
 }
 
-type debris struct {
+type fragment struct {
 	ID     [2]uint8
 	pos    pixel.Vec
 	vel    pixel.Vec

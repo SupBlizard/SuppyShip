@@ -81,7 +81,7 @@ var (
 	// Allocation
 	projectiles []projectile = make([]projectile, 0, PROJ_ALLOC_SIZE)
 	enemies     []enemy      = make([]enemy, 0, ENEMY_ALLOC_SIZE)
-	debrisAlloc []debris     = make([]debris, 0, ENEMY_ALLOC_SIZE)
+	fragments   []fragment   = make([]fragment, 0, ENEMY_ALLOC_SIZE)
 	shipTrail   []trailPart  = make([]trailPart, 0, 64)
 
 	// Spritesheets
@@ -92,7 +92,7 @@ var (
 	// Batches
 	trailBatch      *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, trailSheet)
 	projectileBatch *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, projectileSheet)
-	debrisBatch     *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, debrisSheet)
+	fragmentBatch   *pixel.Batch = pixel.NewBatch(&pixel.TrianglesData{}, fragSheet)
 
 	// Sprites
 	starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite
