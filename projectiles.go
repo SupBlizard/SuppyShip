@@ -63,8 +63,8 @@ func unloadMany(indicies []uint16) {
 // Fire a new bullet
 func fireBullet(shipPos pixel.Vec) {
 	// Check if an Onyx bullet should be created
-	bullets, count := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
-	if count >= ONYX_CLUSTER_REQUIREMENT {
+	bullets := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
+	if uint16(len(bullets)) >= ONYX_CLUSTER_REQUIREMENT {
 		// Unload projectiles used
 		unloadMany(bullets)
 

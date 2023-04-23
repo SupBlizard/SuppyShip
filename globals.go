@@ -131,18 +131,16 @@ func inBounds(pos pixel.Vec, boundaryRange [3]float64) pixel.Vec {
 }
 
 // Return all of the projectiles in a certain radius
-func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) ([]uint16, uint16) {
+func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) []uint16 {
 	var inside []uint16
-	var count uint16 = 0
 
 	// Loop through loaded indexes
 	var lenProj uint16 = uint16(len(projectiles))
 	for i := lenProj - 1; i < lenProj; i-- {
 		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
 			inside = append(inside, i)
-			count++
 		}
 	}
 
-	return inside, count
+	return inside
 }

@@ -45,8 +45,8 @@ func unloadEnemy(idx uint16) {
 
 // Process enemy hitbox
 func enemyHitbox(enemyID uint16) uint16 {
-	bullets, count := projectilesInRadius(enemies[enemyID].pos, enemies[enemyID].hitbox.radius, true)
-	if count == 0 {
+	bullets := projectilesInRadius(enemies[enemyID].pos, enemies[enemyID].hitbox.radius, true)
+	if len(bullets) == 0 {
 		return 0
 	}
 
