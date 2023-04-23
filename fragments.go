@@ -15,16 +15,16 @@ var fragSpritePos = [3][3]pixel.Rect{
 }
 
 // Spawn a cluster of fragments
-func fragmentObject(ID uint8, SEG uint8, pos pixel.Vec, vel pixel.Vec, acc float64, rad float64, frags uint8) {
-	vectors, angles := spreadFragments(frags)
+func fragmentObject(info *fragInfo, seg uint8, pos pixel.Vec, vel pixel.Vec) {
+	vectors, angles := spreadFragments(info.frags)
 	for i, vec := range vectors {
 		loadFragment(fragment{
-			ID:     [2]uint8{ID, SEG},
-			pos:    pos.Add(vec.Scaled(rad)),
-			vel:    vec.Add(vel).Scaled(acc),
+			ID:     [2]uint8{info.ID, seg},
+			pos:    pos.Add(vec.Scaled(info.radius)),
+			vel:    vec.Add(vel).Scaled(info.power),
 			rot:    angles[i],
 			rotVel: rand.Float64() - 0.5,
-			scale:  3,
+			scale:  info.scale,
 		})
 	}
 }

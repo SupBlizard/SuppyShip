@@ -18,6 +18,13 @@ var enemyTypes = []enemy{
 		maxHealth: 10,
 		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
 		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
+		frag: fragInfo{
+			ID:     1,
+			frags:  8,
+			power:  2,
+			radius: 15,
+			scale:  3,
+		},
 	},
 }
 
@@ -32,7 +39,7 @@ func loadEnemy(enemyType uint8, pos pixel.Vec, vel pixel.Vec) {
 
 // Unload projectiles
 func unloadEnemy(idx uint16) {
-	fragmentObject(1, uint8(rand.Int31()%3), enemies[idx].pos, enemies[idx].vel, 2, 20, 8)
+	fragmentObject(&enemies[idx].frag, uint8(rand.Int31()%3), enemies[idx].pos, enemies[idx].vel)
 	enemies[idx] = enemies[len(enemies)-1]
 	enemies = enemies[:len(enemies)-1]
 }

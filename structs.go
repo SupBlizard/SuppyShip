@@ -46,6 +46,7 @@ type enemy struct {
 	maxHealth uint16
 	hitbox    circularHitbox
 	sprite    spriteSheet
+	frag      fragInfo
 }
 
 // Circular hitbox Structure
@@ -82,6 +83,14 @@ type star struct {
 type trailPart struct {
 	pos  pixel.Vec
 	mask color.RGBA
+}
+
+type fragInfo struct {
+	ID     uint8
+	frags  uint8
+	power  float64
+	radius float64
+	scale  float64
 }
 
 type fragment struct {
