@@ -1,6 +1,9 @@
 package main
 
 import (
+	"math"
+	"math/rand"
+
 	"github.com/faiface/pixel"
 )
 
@@ -11,20 +14,48 @@ var fragSpritePos = [3][3]pixel.Rect{
 	[3]pixel.Rect(batchSpritePos(1, fragSheet, fragSprSize)),
 }
 
-// Load a piece of debris if there is space
-func loadDebris(newDebris fragment) {
+// Spawn a cluster of fragments
+func fragmentObject(ID uint8, SEG uint8, pos pixel.Vec, vel pixel.Vec, acc float64, rad float64, frags uint8) {
+	vectors, angles := spreadFragments(frags)
+	for i, vec := range vectors {
+		loadFragment(fragment{
+			ID:     [2]uint8{ID, SEG},
+			pos:    pos.Add(vec.Scaled(rad)),
+			vel:    vec.Add(vel).Scaled(acc),
+			rot:    angles[i],
+			rotVel: rand.Float64() - 0.5,
+			scale:  3,
+		})
+	}
+}
+
+// Spread out fragment directions evenly
+func spreadFragments(n uint8) ([]pixel.Vec, []float64) {
+	var points []pixel.Vec
+	var angles []float64
+	var spread float64 = REVOLUTION / float64(n)
+	for i := 0.0; uint8(i) < n; i++ {
+		points = append(points, pixel.V(math.Cos(spread*i), math.Sin(spread*i)))
+		angles = append(angles, spread*i)
+	}
+
+	return points, angles
+}
+
+// Load a fragment if there is space
+func loadFragment(newDebris fragment) {
 	if debrislen := uint16(len(fragments)); debrislen < DEBRIS_ALLOC_SIZE {
 		fragments = append(fragments, newDebris)
 	}
 }
 
-// Unload debris
-func unloadDebris(idx uint16) {
+// Unload fragment
+func unloadFragment(idx uint16) {
 	fragments[idx] = fragments[len(fragments)-1]
 	fragments = fragments[:len(fragments)-1]
 }
 
-func updateDebris() {
+func updateFragments() {
 	if len(fragments) == 0 {
 		return
 	}
@@ -33,7 +64,7 @@ func updateDebris() {
 	var lenDebris uint16 = uint16(len(fragments))
 	for i := lenDebris - 1; i < lenDebris; i-- {
 		if inBounds(fragments[i].pos, spawnBorder) != pixel.ZV {
-			unloadDebris(i)
+			unloadFragment(i)
 			continue
 		}
 

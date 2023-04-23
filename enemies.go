@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/faiface/pixel"
 )
@@ -35,6 +36,7 @@ func loadEnemy(enemyType uint8, pos pixel.Vec, vel pixel.Vec) {
 
 // Unload projectiles
 func unloadEnemy(idx uint16) {
+	fragmentObject(1, uint8(rand.Int31()%3), enemies[idx].pos, enemies[idx].vel, 2, 20, 8)
 	enemies[idx] = enemies[len(enemies)-1]
 	enemies = enemies[:len(enemies)-1]
 }
@@ -88,6 +90,8 @@ func updateEnemies() {
 // AI Functions
 func asteroid(enemyID uint16) {
 	var ast *enemy = &enemies[enemyID]
+
+	ast.pos = ast.pos.Add(ast.vel)
 
 	drawSprite(&ast.sprite, ast.pos, uint16(
 		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
