@@ -9,6 +9,7 @@ import (
 
 // Update everything about the ship
 func updateShip() {
+
 	// Give velocity a minimum limit or apply friction to the velocity if there is any
 	if ship.vel.Len() <= 0.01 {
 		ship.vel = pixel.ZV
@@ -52,6 +53,22 @@ func updateShip() {
 	if ship.vel.Len() != 0 {
 		ship.pos = ship.pos.Add(ship.vel)
 	}
+}
+
+func collidingWithShip(pos pixel.Vec, radius float64) bool {
+	return ship.pos.Sub(pos).Len() < radius
+}
+
+func hitShip() {
+	if ship.power > 200 {
+		// TODO: visually display that the ship got hit
+		// TODO: a few invinsibillity frames until the shield dies completely
+		ship.power = 0
+		return
+	}
+	fragmentObject(&ship.frag, []uint8{0, 1, 2}, ship.pos, ship.vel)
+	ship.alive = false
+	ship.pos = pixel.V(WINX/2, -200)
 }
 
 // Draw ship to the screen

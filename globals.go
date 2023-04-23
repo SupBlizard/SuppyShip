@@ -57,7 +57,7 @@ var (
 
 	// Player ship
 	ship = player{
-		pos:    pixel.V(WINX/2, 30),
+		pos:    pixel.V(WINX/2, 40),
 		vel:    pixel.ZV,
 		acc:    1.1,
 		frc:    1 - 0.08,
