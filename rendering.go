@@ -9,7 +9,7 @@ import (
 )
 
 // Draw sprites
-func drawSprite(sprite *spriteSheet, pos pixel.Vec, id uint16) {
+func drawSprite(sprite *spriteSheet, pos pixel.Vec, rot float64, id uint16) {
 	if uint16(frameCount)%sprite.cycleSpeed == 0 {
 		sprite.cycle++
 		if sprite.cycle >= sprite.cycleNumber {
@@ -18,7 +18,7 @@ func drawSprite(sprite *spriteSheet, pos pixel.Vec, id uint16) {
 	}
 	sprite.current = id + sprite.offset*sprite.cycle
 
-	sprite.sheet[sprite.current].Draw(win, pixel.IM.Scaled(pixel.ZV, sprite.scale).Moved(pos))
+	sprite.sheet[sprite.current].Draw(win, pixel.IM.Scaled(pixel.ZV, sprite.scale).Rotated(pixel.ZV, rot).Moved(pos))
 }
 
 // Get the positions of a sprite to be batched

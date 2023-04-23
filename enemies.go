@@ -9,19 +9,15 @@ import (
 
 var enemyTypes = []enemy{
 	{
-		pos: pixel.ZV,
-		vel: pixel.ZV,
-		acc: 0,
-		frc: 0,
-		hitbox: circularHitbox{
-			radius: 25,
-			offset: pixel.ZV,
-		},
+		id:        0,
+		pos:       pixel.ZV,
+		vel:       pixel.ZV,
+		rot:       0,
+		rotVel:    0.01,
 		health:    10,
 		maxHealth: 10,
+		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
 		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
-		name:      "Asteroid",
-		id:        0,
 	},
 }
 
@@ -79,6 +75,14 @@ func updateEnemies() {
 			enemies[i].health -= damage
 		}
 
+		// Add enermy rotation
+		enemies[i].rot += enemies[i].rotVel
+		if enemies[i].rot > REVOLUTION {
+			enemies[i].rot -= REVOLUTION
+		} else if enemies[i].rot < 0 {
+			enemies[i].rot += REVOLUTION
+		}
+
 		// Process custom enemy code
 		switch enemies[i].id {
 		case 0:
@@ -93,6 +97,6 @@ func asteroid(enemyID uint16) {
 
 	ast.pos = ast.pos.Add(ast.vel)
 
-	drawSprite(&ast.sprite, ast.pos, uint16(
+	drawSprite(&ast.sprite, ast.pos, ast.rot, uint16(
 		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
 }

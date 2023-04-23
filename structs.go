@@ -37,16 +37,15 @@ type inputStruct struct {
 
 // Enemy Structure
 type enemy struct {
+	id        uint8
 	pos       pixel.Vec
 	vel       pixel.Vec
-	acc       float64
-	frc       float64
-	hitbox    circularHitbox
+	rot       float64
+	rotVel    float64
 	health    uint16
 	maxHealth uint16
+	hitbox    circularHitbox
 	sprite    spriteSheet
-	name      string
-	id        uint8
 }
 
 // Circular hitbox Structure
@@ -68,7 +67,7 @@ type projectile struct {
 // Projectile sprite Structure
 type projectileSprite struct {
 	cycle      uint8
-	cycleSpeed uint32
+	cycleSpeed uint16
 	scale      float64
 	pos        [2]pixel.Rect
 }

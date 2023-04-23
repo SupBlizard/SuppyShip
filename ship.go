@@ -88,7 +88,7 @@ func drawShip() {
 		spriteID = 4 + uint16(currentRollCooldown/seg*uint16(rollDir)&3)
 	}
 
-	drawSprite(&ship.sprite, ship.pos, spriteID)
+	drawSprite(&ship.sprite, ship.pos, 0, spriteID)
 }
 
 func unloadTrailPart(ID int) {

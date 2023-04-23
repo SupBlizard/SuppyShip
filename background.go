@@ -86,7 +86,7 @@ func updateStarPhases(stars []star) []star {
 
 func updateStars() {
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
-		currentPhase := (frameCount / 4) % uint32(STAR_PHASES)
+		currentPhase := (frameCount / 4) % uint16(STAR_PHASES)
 		if skipFrames(2) {
 			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity))
 			if starfieldPos[i].Y < WINY*-0.5 {

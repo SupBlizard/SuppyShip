@@ -70,7 +70,7 @@ var (
 	}
 
 	gunCooldown         uint16
-	reloadDelay         uint32 = 4
+	reloadDelay         uint16 = 4
 	currentRollCooldown uint16
 
 	// Border values (top, bottom, sides)
@@ -105,7 +105,7 @@ func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/
 func signbit(x float64) float64 { return x / math.Abs(x) }
 
 // Return true when frameCount is a multiple of x
-func skipFrames(x uint32) bool { return frameCount%x == 0 }
+func skipFrames(x uint16) bool { return frameCount%x == 0 }
 
 // Return a random vector
 func randomVector(limit int32) pixel.Vec {

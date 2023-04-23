@@ -13,7 +13,7 @@ import (
 
 // Core globals
 var win *pixelgl.Window = nil
-var frameCount uint32
+var frameCount uint16
 
 // Main
 func run() {
