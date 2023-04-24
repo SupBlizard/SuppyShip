@@ -38,6 +38,9 @@ func run() {
 	// temp add enemy asteroid for testing
 	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
 
+	// temp add enemy asteroid for testing
+	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
+
 	var (
 		paused         bool
 		safetyRecharge bool
@@ -144,7 +147,7 @@ func loadStuff() {
 		panic(err)
 	}
 
-	// Generate the star background
+	loadFragmentSprites()
 	loadStarPhases()
 	loadStarFields()
 }

@@ -9,9 +9,6 @@ import (
 var enemyTypes = []enemy{
 	{
 		id:        0,
-		pos:       pixel.ZV,
-		vel:       pixel.ZV,
-		rot:       0,
 		rotVel:    0.01,
 		health:    10,
 		maxHealth: 10,
@@ -19,6 +16,20 @@ var enemyTypes = []enemy{
 		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
 		frag: fragInfo{
 			ID:     1,
+			frags:  8,
+			power:  2,
+			radius: 15,
+			scale:  3,
+		},
+	},
+	{
+		id:        1,
+		health:    10,
+		maxHealth: 10,
+		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
+		sprite:    loadSpritesheet("assets/eye-spritesheet.png", pixel.V(16, 16), 3, 30),
+		frag: fragInfo{
+			ID:     2,
 			frags:  8,
 			power:  2,
 			radius: 15,
@@ -98,6 +109,8 @@ func updateEnemies() {
 		switch enemies[i].id {
 		case 0:
 			asteroid(i)
+		case 1:
+			eye(i)
 		}
 	}
 }
@@ -110,4 +123,19 @@ func asteroid(enemyID uint16) {
 
 	drawSprite(&ast.sprite, ast.pos, ast.rot, uint16(
 		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
+}
+
+func eye(enemyID uint16) {
+	var eye *enemy = &enemies[enemyID]
+
+	eye.pos = eye.pos.Add(eye.vel)
+
+	difference := eye.pos.Sub(ship.pos)
+	eye.rot = math.Acos(difference.X / difference.Len())
+	if eye.pos.Y < ship.pos.Y {
+		eye.rot = REVOLUTION - eye.rot
+	}
+
+	drawSprite(&eye.sprite, eye.pos, eye.rot, uint16(
+		math.Round(divFloat(eye.health, eye.maxHealth)*float64(len(eye.sprite.sheet)/int(eye.sprite.cycleNumber)-1))))
 }
