@@ -13,7 +13,6 @@ var fragSpritePos = [3][3]pixel.Rect{}
 
 func loadFragmentSprites() {
 	max := uint8((fragSheet.Bounds().Max.X - fragSheet.Bounds().Min.X) / fragSprSize.X)
-	println(max)
 	for i := uint8(0); i < max; i++ {
 		fragSpritePos[i] = [3]pixel.Rect(batchSpritePos(i, fragSheet, fragSprSize))
 	}

@@ -99,11 +99,6 @@ func updateEnemies() {
 
 		// Add enermy rotation
 		enemies[i].rot += enemies[i].rotVel
-		if enemies[i].rot > REVOLUTION {
-			enemies[i].rot -= REVOLUTION
-		} else if enemies[i].rot < 0 {
-			enemies[i].rot += REVOLUTION
-		}
 
 		// Process custom enemy code
 		switch enemies[i].id {
@@ -130,12 +125,12 @@ func eye(enemyID uint16) {
 
 	eye.pos = eye.pos.Add(eye.vel)
 
-	difference := eye.pos.Sub(ship.pos)
-	eye.rot = math.Acos(difference.X / difference.Len())
-	if eye.pos.Y < ship.pos.Y {
-		eye.rot = REVOLUTION - eye.rot
+	sight := ship.pos.Sub(eye.pos)
+	shouldLook := math.Acos(sight.X/sight.Len()) * signbit(sight.Y)
+	eye.rotVel = (shouldLook - eye.rot)
+	if (shouldLook - eye.rot) < AXIS_DEADZONE {
+		eye.rotVel = (shouldLook - eye.rot)
 	}
-
 	drawSprite(&eye.sprite, eye.pos, eye.rot, uint16(
 		math.Round(divFloat(eye.health, eye.maxHealth)*float64(len(eye.sprite.sheet)/int(eye.sprite.cycleNumber)-1))))
 }
