@@ -9,10 +9,14 @@ import (
 
 var fragSprSize pixel.Vec = pixel.V(6, 10)
 var fragSheet pixel.Picture = loadPicture("assets/fragment-spritesheet.png")
-var fragSpritePos = [3][3]pixel.Rect{
-	[3]pixel.Rect(batchSpritePos(0, fragSheet, fragSprSize)),
-	[3]pixel.Rect(batchSpritePos(1, fragSheet, fragSprSize)),
-	[3]pixel.Rect(batchSpritePos(2, fragSheet, fragSprSize)),
+var fragSpritePos = [3][3]pixel.Rect{}
+
+func loadFragmentSprites() {
+	max := uint8((fragSheet.Bounds().Max.X - fragSheet.Bounds().Min.X) / fragSprSize.X)
+	println(max)
+	for i := uint8(0); i < max; i++ {
+		fragSpritePos[i] = [3]pixel.Rect(batchSpritePos(i, fragSheet, fragSprSize))
+	}
 }
 
 // Spawn a cluster of fragments
