@@ -55,13 +55,16 @@ func updateShip() {
 	}
 }
 
-func collidingWithShip(pos pixel.Vec, radius float64) bool {
-	return ship.pos.Sub(pos).Len() < radius+ship.hitbox.radius
+func collidingWithShip(obj *enemy) bool {
+	diffVec := ship.pos.Sub(obj.pos)
+	if diffVec.Len() < obj.hitbox.radius+ship.hitbox.radius {
+		ship.vel = diffVec.Scaled(ship.vel.Len()/diffVec.Len() + 0.05)
+		return true
+	}
+	return false
 }
 
-func hitShip(enemyPos pixel.Vec, enemyVel pixel.Vec) {
-	// Apply collision vel to the ship
-
+func hitShip() {
 	if shieldProtection > 0 {
 		return
 	}
