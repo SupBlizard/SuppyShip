@@ -19,6 +19,7 @@ const (
 	AXIS_DEADZONE           float64 = 0.1
 	DEFAULT_GLOBAL_VELOCITY float64 = 10
 
+	SHIELD_LENGTH            uint8   = 60
 	ROLL_COOLDOWN            uint16  = 40
 	ROLL_SPRITE_NUMBER       uint16  = 6
 	ONYX_COOLDOWN            uint16  = 60
@@ -62,13 +63,15 @@ var (
 		vel:    pixel.ZV,
 		acc:    1.1,
 		frc:    1 - 0.08,
-		power:  255,
+		power:  0xFF,
 		alive:  true,
 		hitbox: circularHitbox{radius: 12, offset: pixel.ZV},
 		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
 		frag:   fragInfo{ID: 0, frags: 3, power: 0.8, radius: 5, scale: 3},
 	}
 
+	// Ship related
+	shieldProtection    uint8
 	gunCooldown         uint16
 	reloadDelay         uint16 = 4
 	currentRollCooldown uint16

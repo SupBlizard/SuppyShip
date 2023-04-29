@@ -85,7 +85,7 @@ func updateEnemies() {
 
 		// Check if colliding with ship
 		if ship.alive && collidingWithShip(enemies[i].pos, enemies[i].hitbox.radius) {
-			hitShip()
+			hitShip(enemies[i].pos, enemies[i].vel)
 		}
 
 		// Calculate enemy health

@@ -82,6 +82,11 @@ func run() {
 						safetyRecharge = true
 					}
 				}
+
+				// Shield invisibillity frames
+				if skipFrames(2) && shieldProtection > 0 {
+					shieldProtection--
+				}
 			}
 
 			// Draw stars
@@ -94,7 +99,7 @@ func run() {
 			updateEnemies()
 
 			// Draw ship
-			if ship.alive {
+			if ship.alive && shieldProtection%5 != 1 {
 				drawShip()
 			}
 

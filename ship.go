@@ -59,11 +59,15 @@ func collidingWithShip(pos pixel.Vec, radius float64) bool {
 	return ship.pos.Sub(pos).Len() < radius+ship.hitbox.radius
 }
 
-func hitShip() {
-	if ship.power > 200 {
-		// TODO: visually display that the ship got hit
-		// TODO: a few invinsibillity frames until the shield dies completely
+func hitShip(enemyPos pixel.Vec, enemyVel pixel.Vec) {
+	// Apply collision vel to the ship
+
+	if shieldProtection > 0 {
+		return
+	}
+	if ship.power == 0xFF {
 		ship.power = 0
+		shieldProtection = SHIELD_LENGTH
 		return
 	}
 	fragmentObject(&ship.frag, []uint8{0, 1, 2}, ship.pos, ship.vel)
@@ -119,7 +123,7 @@ func updateShipTrail(shipPosX float64) {
 		}
 
 		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, (globalVelocity - 15)))
-		scale := 2 * (float64(shipTrail[i].mask.A) / 255)
+		scale := 2 * (float64(shipTrail[i].mask.A) / 0xFF)
 
 		// Draw trail
 		pixel.NewSprite(trailSheet, trailSheet.Bounds()).Draw(
