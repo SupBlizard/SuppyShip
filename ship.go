@@ -73,36 +73,29 @@ func hitShip() {
 
 // Draw ship to the screen
 func drawShip() {
-	var spriteID uint16 = 1
+	var spriteID uint16 = 6
 	if currentRollCooldown == 0 {
 		if input.dir.Y != 0 {
 			if input.dir.Y < 0 {
-				spriteID = 0
+				spriteID = 5
 			} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
-				spriteID = 2
+				spriteID = 7
 				shipTrail = append(shipTrail, trailPart{pos: ship.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
 			} else {
-				spriteID = 3
+				spriteID = 8
 				shipTrail = append(shipTrail, trailPart{pos: ship.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
 			}
-
 		}
 
 		if math.Abs(input.dir.X) > AXIS_DEADZONE {
+			spriteID = 4
 			if input.dir.X > 0 {
-				spriteID = 4
-			} else {
-				spriteID = 7
+				spriteID = 0
 			}
 		}
 	} else {
-		seg := ROLL_COOLDOWN / 5
-		var rollDir int = -1
-		if ship.vel.X > 0 {
-			rollDir = 1
-		}
-
-		spriteID = 4 + uint16(currentRollCooldown/seg*uint16(rollDir)&3)
+		// (rollDir*-1*4)) was the if statement for offset (offset 0 and 4)
+		spriteID = uint16(int16(currentRollCooldown/(ROLL_COOLDOWN/4))*rollDir+(rollDir*-1*4)) % ROLL_SPRITE_NUMBER
 	}
 
 	drawSprite(&ship.sprite, ship.pos, 0, spriteID)
@@ -141,8 +134,12 @@ func handleRolling() {
 	sign := signbit(ship.vel.X)
 	if currentRollCooldown == 0 {
 		if input.roll && math.Abs(ship.vel.X) > 0.5 {
-			ship.vel.X += 8 * sign
 			currentRollCooldown = ROLL_COOLDOWN
+			rollDir = 1
+			ship.vel.X += 8 * sign
+			if ship.vel.X > 0 {
+				rollDir = -1
+			}
 		}
 	} else {
 		input.dir.X = 0

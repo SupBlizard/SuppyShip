@@ -19,7 +19,8 @@ const (
 	AXIS_DEADZONE           float64 = 0.1
 	DEFAULT_GLOBAL_VELOCITY float64 = 10
 
-	ROLL_COOLDOWN            uint16  = 20
+	ROLL_COOLDOWN            uint16  = 40
+	ROLL_SPRITE_NUMBER       uint16  = 6
 	ONYX_COOLDOWN            uint16  = 60
 	ONYX_CLUSTER_REQUIREMENT uint16  = 7
 	ONYX_CLUSTER_RADIUS      float64 = 30
@@ -71,6 +72,7 @@ var (
 	gunCooldown         uint16
 	reloadDelay         uint16 = 4
 	currentRollCooldown uint16
+	rollDir             int16
 
 	// Border values (top, bottom, sides)
 	windowBorder = [3]float64{0, 0, 0}
