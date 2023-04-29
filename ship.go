@@ -56,7 +56,7 @@ func updateShip() {
 }
 
 func collidingWithShip(pos pixel.Vec, radius float64) bool {
-	return ship.pos.Sub(pos).Len() < radius
+	return ship.pos.Sub(pos).Len() < radius+ship.hitbox.radius
 }
 
 func hitShip() {
