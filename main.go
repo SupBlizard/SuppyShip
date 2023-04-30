@@ -84,8 +84,8 @@ func run() {
 				}
 
 				// Shield invisibillity frames
-				if skipFrames(2) && shieldProtection > 0 {
-					shieldProtection--
+				if skipFrames(2) && ship.shield.prot > 0 {
+					ship.shield.prot--
 				}
 			}
 
@@ -98,9 +98,15 @@ func run() {
 			// Update Enemies
 			updateEnemies()
 
-			// Draw ship
-			if ship.alive && shieldProtection%5 != 1 {
-				drawShip()
+			if ship.alive {
+				// Draw ship
+				if ship.shield.prot%5 != 1 {
+					drawShip()
+				}
+				// Draw shield
+				if ship.power == 0xFF {
+					drawSprite(&ship.shield.sprite, ship.pos, 0, 0)
+				}
 			}
 
 			// Draw ship trail

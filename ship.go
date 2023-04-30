@@ -65,12 +65,12 @@ func collidingWithShip(obj *enemy) bool {
 }
 
 func hitShip() {
-	if shieldProtection > 0 {
+	if ship.shield.prot > 0 {
 		return
 	}
 	if ship.power == 0xFF {
 		ship.power = 0
-		shieldProtection = SHIELD_LENGTH
+		ship.shield.prot = ship.shield.protLength
 		return
 	}
 	fragmentObject(&ship.frag, []uint8{0, 1, 2}, ship.pos, ship.vel)
