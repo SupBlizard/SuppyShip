@@ -14,9 +14,16 @@ type player struct {
 	frc    float64
 	power  uint8
 	alive  bool
+	shield shipShield
 	hitbox circularHitbox
 	sprite spriteSheet
 	frag   fragInfo
+}
+
+type shipShield struct {
+	prot       uint8
+	protLength uint8
+	sprite     spriteSheet
 }
 
 // Enemy Structure
