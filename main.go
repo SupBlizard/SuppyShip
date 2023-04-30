@@ -50,11 +50,21 @@ func run() {
 	)
 
 	for !win.Closed() {
+		// Title Screen
 		if currentLevel == 0 {
+			win.Clear(color.RGBA{0, 0, 0, 0})
+
+			// Draw Title
 			titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
+
+			// Draw stars
+			updateStars(0, 5)
+
+			// Start game
 			if win.Pressed(pixelgl.KeyEnter) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
 				currentLevel = 1
 			}
+			frameCount++
 		} else if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
 			// Handle pause button
 			paused = !paused
@@ -90,7 +100,7 @@ func run() {
 			}
 
 			// Draw stars
-			updateStars()
+			updateStars(2, 4)
 
 			// Update Projectiles
 			updateProjectiles()

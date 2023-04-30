@@ -44,7 +44,7 @@ const (
 
 var (
 	currentLevel   uint8
-	globalVelocity float64    = DEFAULT_GLOBAL_VELOCITY
+	globalVelocity float64    = 0
 	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
 
 	// Input
@@ -62,7 +62,7 @@ var (
 		vel:   pixel.ZV,
 		acc:   1.1,
 		frc:   1 - 0.08,
-		power: 0xFF,
+		power: 30,
 		alive: true,
 		shield: shipShield{
 			prot:       0,
@@ -113,7 +113,12 @@ func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/
 func signbit(x float64) float64 { return x / math.Abs(x) }
 
 // Return true when frameCount is a multiple of x
-func skipFrames(x uint16) bool { return frameCount%x == 0 }
+func skipFrames(x uint16) bool {
+	if x == 0 {
+		return false
+	}
+	return frameCount%x == 0
+}
 
 // Return a random vector
 func randomVector(limit int32) pixel.Vec {

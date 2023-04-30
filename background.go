@@ -84,16 +84,17 @@ func updateStarPhases(stars []star) []star {
 	return stars
 }
 
-func updateStars() {
+func updateStars(posRate uint16, phaseRate uint16) {
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
-		currentPhase := (frameCount / 4) % uint16(STAR_PHASES)
-		if skipFrames(2) {
+		// Update starfield pos
+		if skipFrames(posRate) {
 			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity))
 			if starfieldPos[i].Y < WINY*-0.5 {
 				starfieldPos[i].Y = WINY * 1.5
 			}
 		}
 
-		starFields[i][currentPhase].Draw(win, pixel.IM.Moved(starfieldPos[i]))
+		// Draw starfield
+		starFields[i][(frameCount/phaseRate)%uint16(STAR_PHASES)].Draw(win, pixel.IM.Moved(starfieldPos[i]))
 	}
 }
