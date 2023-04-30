@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"math"
 	"math/rand"
 
@@ -84,7 +85,7 @@ func updateStarPhases(stars []star) []star {
 	return stars
 }
 
-func updateStars(posRate uint16, phaseRate uint16) {
+func updateStars(posRate uint16, phaseRate uint16, colorMask color.Color) {
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
 		// Update starfield pos
 		if skipFrames(posRate) {
@@ -95,6 +96,6 @@ func updateStars(posRate uint16, phaseRate uint16) {
 		}
 
 		// Draw starfield
-		starFields[i][(frameCount/phaseRate)%uint16(STAR_PHASES)].Draw(win, pixel.IM.Moved(starfieldPos[i]))
+		starFields[i][(frameCount/phaseRate)%uint16(STAR_PHASES)].DrawColorMask(win, pixel.IM.Moved(starfieldPos[i]), colorMask)
 	}
 }

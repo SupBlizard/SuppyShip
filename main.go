@@ -58,7 +58,7 @@ func run() {
 			titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
 
 			// Draw stars
-			updateStars(0, 5)
+			updateStars(0, 5, mainColor)
 
 			// Start game
 			if win.Pressed(pixelgl.KeyEnter) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
@@ -100,7 +100,7 @@ func run() {
 			}
 
 			// Draw stars
-			updateStars(2, 4)
+			updateStars(2, 4, nil)
 
 			// Update Projectiles
 			updateProjectiles()
