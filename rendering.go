@@ -35,13 +35,9 @@ func batchSpritePos(ID uint8, sheet pixel.Picture, size pixel.Vec) []pixel.Rect 
 func loadSpritesheet(imagePath string, spriteSize pixel.Vec, scale float64, cycleSpeed uint16) spriteSheet {
 	sheet := loadPicture(imagePath)
 	sprite := spriteSheet{
-		scale:       scale,
-		offset:      0,
-		cycle:       0,
-		cycleNumber: 0,
-		cycleSpeed:  cycleSpeed,
-		current:     0,
-		sheet:       nil,
+		scale:      scale,
+		cycleSpeed: cycleSpeed,
+		sheet:      nil,
 	}
 
 	var spriteNumber uint16
