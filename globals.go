@@ -71,7 +71,7 @@ var (
 		},
 		hitbox: circularHitbox{radius: 12, offset: pixel.ZV},
 		sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
-		frag:   fragInfo{ID: 0, frags: 3, power: 0.8, radius: 5, scale: 3},
+		frag:   fragInfo{ID: 0, frags: 3, power: 0.5, radius: 5, scale: 3},
 	}
 
 	// Ship related
@@ -151,7 +151,7 @@ func projectilesInRadius(point pixel.Vec, radius float64, friendliness bool) []u
 	// Loop through loaded indexes
 	var lenProj uint16 = uint16(len(projectiles))
 	for i := lenProj - 1; i < lenProj; i-- {
-		if projectiles[i].friendly == friendliness && projectiles[i].pos.Sub(point).Len() < radius {
+		if projectiles[i].friendly == friendliness && point.To(projectiles[i].pos).Len() < radius {
 			inside = append(inside, i)
 		}
 	}

@@ -125,7 +125,7 @@ func updateShipTrail(shipPosX float64) {
 			continue
 		}
 
-		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, (globalVelocity - 15)))
+		shipTrail[i].pos = pixel.V(0, (globalVelocity - 15)).To(shipTrail[i].pos)
 		scale := 2 * (float64(shipTrail[i].mask.A) / 0xFF)
 
 		// Draw trail

@@ -125,12 +125,11 @@ func eye(enemyID uint16) {
 
 	eye.pos = eye.pos.Add(eye.vel)
 
-	sight := ship.pos.Sub(eye.pos)
-	shouldLook := math.Acos(sight.X/sight.Len()) * signbit(sight.Y)
-	eye.rotVel = (shouldLook - eye.rot)
-	if (shouldLook - eye.rot) < AXIS_DEADZONE {
-		eye.rotVel = (shouldLook - eye.rot)
-	}
+	sightAngle := eye.pos.To(ship.pos).Angle()
+	eye.rotVel = (sightAngle - eye.rot)
+	// if (sightAngle - eye.rot) < AXIS_DEADZONE {
+	// 	eye.rotVel = (sightAngle - eye.rot)
+	// }
 	drawSprite(&eye.sprite, eye.pos, eye.rot, uint16(
 		math.Round(divFloat(eye.health, eye.maxHealth)*float64(len(eye.sprite.sheet)/int(eye.sprite.cycleNumber)-1))))
 }

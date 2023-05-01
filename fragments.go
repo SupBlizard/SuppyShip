@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	"math/rand"
 
 	"github.com/faiface/pixel"
@@ -20,12 +19,13 @@ func loadFragmentSprites() {
 
 // Spawn a cluster of fragments
 func fragmentObject(info *fragInfo, seg []uint8, pos pixel.Vec, vel pixel.Vec) {
-	vectors, angles := spreadFragments(info.frags)
+	angles := spreadFragments(info.frags)
 
-	for i, vec := range vectors {
+	for i := 0; i < len(angles); i++ {
 		if len(seg) == i {
 			seg = append(seg, uint8(rand.Int31()%3))
 		}
+		var vec pixel.Vec = pixel.Unit(angles[i])
 		loadFragment(fragment{
 			ID:     [2]uint8{info.ID, seg[i]},
 			pos:    pos.Add(vec.Scaled(info.radius)),
@@ -38,16 +38,14 @@ func fragmentObject(info *fragInfo, seg []uint8, pos pixel.Vec, vel pixel.Vec) {
 }
 
 // Spread out fragment directions evenly
-func spreadFragments(n uint8) ([]pixel.Vec, []float64) {
-	var points []pixel.Vec
+func spreadFragments(n uint8) []float64 {
 	var angles []float64
 	var spread float64 = REVOLUTION / float64(n)
 	for i := 0.0; uint8(i) < n; i++ {
-		points = append(points, pixel.V(math.Cos(spread*i), math.Sin(spread*i)))
 		angles = append(angles, spread*i)
 	}
 
-	return points, angles
+	return angles
 }
 
 // Load a fragment if there is space
