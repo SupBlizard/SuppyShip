@@ -89,7 +89,7 @@ func updateStars(posRate uint16, phaseRate uint16, colorMask color.Color) {
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
 		// Update starfield pos
 		if skipFrames(posRate) {
-			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity))
+			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity*starAcc+starSpeed))
 			if starfieldPos[i].Y < WINY*-0.5 {
 				starfieldPos[i].Y = WINY * 1.5
 			}

@@ -44,7 +44,7 @@ const (
 var (
 	currentLevel   uint8
 	globalVelocity float64    = 0
-	globalAcc      [2]float64 = [2]float64{1.4, 0.6}
+	globalAcc      [2]float64 = [2]float64{1.4, 0.7}
 
 	// Input
 	input       = inputStruct{}
@@ -102,6 +102,10 @@ var (
 
 	// Sprites
 	starSprites [STAR_MAX_PHASE + 1]*pixel.Sprite
+
+	// Star
+	starSpeed float64 = 7
+	starAcc   float64 = 5
 )
 
 // Calculate how far into the border something is
