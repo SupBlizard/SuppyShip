@@ -15,9 +15,8 @@ const (
 
 	REVOLUTION float64 = math.Pi * 2
 
-	BOUNDARY_STRENGTH       float64 = 2
-	AXIS_DEADZONE           float64 = 0.1
-	DEFAULT_GLOBAL_VELOCITY float64 = 10
+	BOUNDARY_STRENGTH float64 = 2
+	AXIS_DEADZONE     float64 = 0.1
 
 	ROLL_COOLDOWN            uint16  = 40
 	ROLL_SPRITE_NUMBER       uint16  = 6
@@ -75,7 +74,6 @@ var (
 	}
 
 	// Ship related
-
 	gunCooldown         uint16
 	reloadDelay         uint16 = 4
 	currentRollCooldown uint16

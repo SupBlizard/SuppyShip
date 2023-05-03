@@ -39,7 +39,7 @@ func updateShip() {
 		}
 
 		counterAcceleration := ship.acc * BOUNDARY_STRENGTH
-		globalVelocity -= (borderDepth * borderCollisions.Y * (DEFAULT_GLOBAL_VELOCITY * globalAcc[globalAccIdx]))
+		globalVelocity -= (borderDepth * borderCollisions.Y * math.Pow(globalAcc[globalAccIdx], 2))
 		ship.vel.Y += counterAcceleration * borderDepth * borderCollisions.Y
 
 		if borderCollisions.X == -1 {
@@ -85,7 +85,7 @@ func drawShip() {
 		if input.dir.Y != 0 {
 			if input.dir.Y < 0 {
 				spriteID = 5
-			} else if globalVelocity < DEFAULT_GLOBAL_VELOCITY+5 {
+			} else if globalVelocity < 0.5 {
 				spriteID = 7
 				shipTrail = append(shipTrail, trailPart{pos: ship.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
 			} else {
@@ -113,14 +113,14 @@ func unloadTrailPart(ID int) {
 	shipTrail = shipTrail[:len(shipTrail)-1]
 }
 
-func updateShipTrail(shipPosX float64) {
+func updateShipTrail(shipPos pixel.Vec) {
 	if len(shipTrail) == 0 {
 		return
 	}
 
 	for i := 0; i < len(shipTrail); i++ {
 		shipTrail[i].mask.A -= 20
-		if shipTrail[i].mask.A < 20 || math.Abs(shipTrail[i].pos.X-shipPosX) > 6 {
+		if shipTrail[i].mask.A < 20 || math.Abs(shipTrail[i].pos.X-shipPos.X) > 6 || shipTrail[i].pos.Y > shipPos.Y {
 			unloadTrailPart(i)
 			continue
 		}

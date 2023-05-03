@@ -23,10 +23,10 @@ func run() {
 	// Load text atlas
 	var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
-	var mainColor = color.RGBA{89, 232, 248, 255}
+	var mainColor = color.RGBA{0, 255, 152, 255}
 	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
 	titleText.Color = mainColor
-	fmt.Fprintln(titleText, "Suppy Ship")
+	fmt.Fprintln(titleText, TITLE)
 
 	pauseText := text.New(pixel.V(50, WINY-50), textAtlas)
 	pauseText.Color = mainColor
@@ -74,7 +74,7 @@ func run() {
 		// Game handling
 		if !paused && currentLevel != 0 {
 			win.Clear(color.RGBA{0, 0, 0, 0})
-			globalVelocity = DEFAULT_GLOBAL_VELOCITY
+			globalVelocity = 0
 
 			if ship.alive {
 				// Update frame's input
@@ -120,7 +120,7 @@ func run() {
 			}
 
 			// Draw ship trail
-			updateShipTrail(ship.pos.X)
+			updateShipTrail(ship.pos)
 
 			// Update Debris
 			updateFragments()
