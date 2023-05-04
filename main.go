@@ -109,6 +109,9 @@ func run() {
 			updateEnemies()
 
 			if ship.alive {
+				// Draw ship trail
+				updateShipTrail(ship.pos)
+
 				// Draw ship
 				if ship.shield.prot%5 != 1 {
 					drawShip()
@@ -118,9 +121,6 @@ func run() {
 					drawSprite(&ship.shield.sprite, ship.pos, 0, 0)
 				}
 			}
-
-			// Draw ship trail
-			updateShipTrail(ship.pos)
 
 			// Update Debris
 			updateFragments()

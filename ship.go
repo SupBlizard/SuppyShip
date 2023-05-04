@@ -87,10 +87,10 @@ func drawShip() {
 				spriteID = 5
 			} else if globalVelocity < 0.5 {
 				spriteID = 7
-				shipTrail = append(shipTrail, trailPart{pos: ship.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
+				shipTrail = append(shipTrail, trailPart{pos: ship.pos, mask: color.RGBA{255, 255, 255, 255}})
 			} else {
 				spriteID = 8
-				shipTrail = append(shipTrail, trailPart{pos: ship.pos.Sub(pixel.V(0, 18)), mask: color.RGBA{255, 255, 255, 255}})
+				shipTrail = append(shipTrail, trailPart{pos: ship.pos, mask: color.RGBA{255, 255, 255, 255}})
 			}
 		}
 
@@ -120,13 +120,13 @@ func updateShipTrail(shipPos pixel.Vec) {
 
 	for i := 0; i < len(shipTrail); i++ {
 		shipTrail[i].mask.A -= 20
-		if shipTrail[i].mask.A < 20 || math.Abs(shipTrail[i].pos.X-shipPos.X) > 6 || shipTrail[i].pos.Y > shipPos.Y {
+		if shipTrail[i].mask.A < 20 || math.Abs(shipTrail[i].pos.X-shipPos.X) > 6 {
 			unloadTrailPart(i)
 			continue
 		}
 
-		shipTrail[i].pos = pixel.V(0, (globalVelocity - 15)).To(shipTrail[i].pos)
-		scale := 2 * (float64(shipTrail[i].mask.A) / 0xFF)
+		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, shipTrailLength+(globalVelocity*shipTrailAcc)-ship.vel.Y))
+		scale := 2.5 * (float64(shipTrail[i].mask.A) / 0xFF)
 
 		// Draw trail
 		pixel.NewSprite(trailSheet, trailSheet.Bounds()).Draw(

@@ -74,6 +74,8 @@ var (
 	}
 
 	// Ship related
+	shipTrailLength     float64 = 3
+	shipTrailAcc        float64 = 4
 	gunCooldown         uint16
 	reloadDelay         uint16 = 4
 	currentRollCooldown uint16
