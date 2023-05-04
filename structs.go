@@ -21,6 +21,7 @@ type player struct {
 }
 
 type shipShield struct {
+	active     bool
 	prot       uint8
 	protLength uint8
 	sprite     spriteSheet

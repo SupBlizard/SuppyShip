@@ -49,6 +49,15 @@ func updateShip() {
 		}
 	}
 
+	// Check if shield is active
+	if ship.power == 0xFF {
+		ship.hitbox.radius = SHIELD_RADIUS
+		ship.shield.active = true
+	} else {
+		ship.hitbox.radius = SHIP_HITBOX
+		ship.shield.active = false
+	}
+
 	// Add new velocity to the position
 	if ship.vel.Len() != 0 {
 		ship.pos = ship.pos.Add(ship.vel)
@@ -58,6 +67,7 @@ func updateShip() {
 func collidingWithShip(obj *enemy) bool {
 	diffVec := ship.pos.Sub(obj.pos)
 	if diffVec.Len() < obj.hitbox.radius+ship.hitbox.radius {
+		// Bounce ship off
 		ship.vel = diffVec.Scaled(ship.vel.Len()/diffVec.Len() + 0.05)
 		return true
 	}
@@ -68,7 +78,7 @@ func hitShip() {
 	if ship.shield.prot > 0 {
 		return
 	}
-	if ship.power == 0xFF {
+	if ship.shield.active {
 		ship.power = 0
 		ship.shield.prot = ship.shield.protLength
 		return

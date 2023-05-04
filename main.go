@@ -117,7 +117,7 @@ func run() {
 					drawShip()
 				}
 				// Draw shield
-				if ship.power == 0xFF {
+				if ship.shield.active {
 					drawSprite(&ship.shield.sprite, ship.pos, 0, 0)
 				}
 			}
