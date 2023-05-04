@@ -203,14 +203,14 @@ func handleInput(win *pixelgl.Window) {
 	}
 
 	// Shoot
-	if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonRightBumper) || win.Pressed(pixelgl.KeyP) {
+	if win.JoystickPressed(pixelgl.Joystick1, pixelgl.ButtonRightBumper) || win.Pressed(pixelgl.MouseButtonLeft) {
 		input.shoot = true
 	} else {
 		input.shoot = false
 	}
 
 	// Roll
-	if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonA) || win.JustPressed(pixelgl.KeyO) {
+	if win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonA) || win.JustPressed(pixelgl.MouseButtonRight) {
 		input.roll = true
 	} else {
 		input.roll = false
