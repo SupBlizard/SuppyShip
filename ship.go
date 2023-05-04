@@ -17,13 +17,13 @@ func updateShip() {
 		ship.vel = ship.vel.Scaled(ship.frc)
 	}
 
+	// Handle rolling after friction being applied
+	handleRolling()
+
 	// Add new velocity if there is input
 	if input.dir != pixel.ZV {
 		ship.vel = ship.vel.Add(input.dir)
 	}
-
-	// Handle rolling after friction being applied
-	handleRolling()
 
 	// Enforce soft boundary on ship
 	if borderCollisions := inBounds(ship.pos, forceBorder); borderCollisions != pixel.ZV {
@@ -102,7 +102,7 @@ func drawShip() {
 		}
 	} else {
 		// (rollDir*-1*4)) was the if statement for offset (offset 0 and 4)
-		spriteID = uint16(int16(currentRollCooldown/(ROLL_COOLDOWN/4))*rollDir+(rollDir*-1*4)) % ROLL_SPRITE_NUMBER
+		spriteID = uint16(int16(currentRollCooldown/(ROLL_COOLDOWN/4))*rollDir*-1+(rollDir*4)) % ROLL_SPRITE_NUMBER
 	}
 
 	drawSprite(&ship.sprite, ship.pos, 0, spriteID)
@@ -138,18 +138,17 @@ func updateShipTrail(shipPos pixel.Vec) {
 }
 
 func handleRolling() {
-	sign := signbit(ship.vel.X)
+	dir := signbit(ship.vel.X)
 	if currentRollCooldown == 0 {
 		if input.roll && math.Abs(ship.vel.X) > 0.5 {
 			currentRollCooldown = ROLL_COOLDOWN
-			rollDir = 1
-			ship.vel.X += 8 * sign
-			if ship.vel.X > 0 {
-				rollDir = -1
-			}
+			rollDir = int16(dir)
+			ship.vel.X += 10 * dir
+
 		}
 	} else {
-		input.dir.X = 0
+		// Dampen control on the X axis
+		input.dir.X /= 2
 		currentRollCooldown--
 	}
 }
