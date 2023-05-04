@@ -18,7 +18,7 @@ const (
 	BOUNDARY_STRENGTH float64 = 2
 	AXIS_DEADZONE     float64 = 0.1
 
-	ROLL_COOLDOWN            uint16  = 40
+	ROLL_COOLDOWN            uint16  = 35
 	ROLL_SPRITE_NUMBER       uint16  = 6
 	ONYX_COOLDOWN            uint16  = 60
 	ONYX_CLUSTER_REQUIREMENT uint16  = 7

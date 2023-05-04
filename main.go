@@ -167,6 +167,7 @@ func loadStuff() {
 	if err != nil {
 		panic(err)
 	}
+	win.SetCursorVisible(false)
 
 	loadFragmentSprites()
 	loadStarPhases()
