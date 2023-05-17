@@ -14,26 +14,27 @@ import (
 // Core globals
 var win *pixelgl.Window = nil
 var frameCount uint16
+var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 // Main
 func run() {
 	// Self explanatory
 	loadStuff()
 
-	// Load text atlas
-	var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
-
 	var mainColor = color.RGBA{0, 255, 152, 255}
-	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
-	titleText.Color = mainColor
-	fmt.Fprintln(titleText, TITLE)
 
+	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
 	pauseText := text.New(pixel.V(50, WINY-50), textAtlas)
-	pauseText.Color = mainColor
+	powerText := text.New(pixel.V(50, 50), textAtlas)
+
+	// Write to text
+	fmt.Fprintln(titleText, TITLE)
 	fmt.Fprintln(pauseText, "Paused")
 
-	powerText := text.New(pixel.V(50, 50), textAtlas)
+	// Color text
+	pauseText.Color = mainColor
 	powerText.Color = mainColor
+	titleText.Color = mainColor
 
 	// temp add enemy asteroid for testing
 	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
@@ -50,30 +51,22 @@ func run() {
 	)
 
 	for !win.Closed() {
+		win.Clear(color.RGBA{0, 0, 0, 0})
+
 		// Title Screen
 		if currentLevel == 0 {
-			win.Clear(color.RGBA{0, 0, 0, 0})
-
-			// Draw Title
-			titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
-
-			// Draw stars
-			updateStars(0, 5, mainColor)
-
-			// Start game
-			if win.Pressed(pixelgl.KeyEnter) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
-				currentLevel = 1
-			}
-			frameCount++
-		} else if win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart) {
-			// Handle pause button
+			startScreen(titleText)
+		} else if pauseButton() {
 			paused = !paused
-			pauseText.Draw(win, pixel.IM.Scaled(pauseText.Orig, 2))
+		}
+
+		if paused {
+			pauseMenu(pauseText)
 		}
 
 		// Game handling
 		if !paused && currentLevel != 0 {
-			win.Clear(color.RGBA{0, 0, 0, 0})
+
 			globalVelocity = 0
 
 			if ship.alive {
@@ -172,6 +165,37 @@ func loadStuff() {
 	loadFragmentSprites()
 	loadStarPhases()
 	loadStarFields()
+}
+
+// Handle start screen
+func startScreen(titleText *text.Text) {
+	win.Clear(color.RGBA{0, 0, 0, 0})
+
+	// Draw Title
+	titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
+
+	// Draw stars
+	updateStars(0, 5, color.RGBA{0, 255, 152, 255})
+
+	// Start game
+	if startButton() {
+		currentLevel = 1
+	}
+	frameCount++
+}
+
+// Handle pause menu
+func pauseMenu(pauseText *text.Text) {
+	pauseText.Draw(win, pixel.IM.Scaled(pauseText.Orig, 2))
+}
+
+// Button functions
+func pauseButton() bool {
+	return win.JustPressed(pixelgl.KeyEscape) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart)
+}
+
+func startButton() bool {
+	return win.Pressed(pixelgl.KeyEnter) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart)
 }
 
 // Handle user input for a single frame
