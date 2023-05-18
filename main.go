@@ -43,9 +43,7 @@ func run() {
 	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
 
 	var (
-		paused         bool
-		safetyRecharge bool
-
+		paused bool
 		frames int
 		second = time.Tick(time.Second)
 	)
@@ -66,71 +64,7 @@ func run() {
 
 		// Game handling
 		if !paused && currentLevel != 0 {
-
-			globalVelocity = 0
-
-			if ship.alive {
-				// Update frame's input
-				handleInput(win)
-
-				// Update ship
-				updateShip()
-
-				// Fire bullets
-				if input.shoot && skipFrames(reloadDelay) && !safetyRecharge && gunCooldown == 0 {
-					if ship.power > 5 {
-						fireBullet(ship.pos)
-						ship.power -= 5
-					} else {
-						safetyRecharge = true
-					}
-				}
-
-				// Shield invisibillity frames
-				if skipFrames(2) && ship.shield.prot > 0 {
-					ship.shield.prot--
-				}
-			}
-
-			// Draw stars
-			updateStars(2, 4, nil)
-
-			// Update Projectiles
-			updateProjectiles()
-
-			// Update Enemies
-			updateEnemies()
-
-			if ship.alive {
-				// Draw ship trail
-				updateShipTrail(ship.pos)
-
-				// Draw ship
-				if ship.shield.prot%5 != 1 {
-					drawShip()
-				}
-				// Draw shield
-				if ship.shield.active {
-					drawSprite(&ship.shield.sprite, ship.pos, 0, 0)
-				}
-			}
-
-			// Update Debris
-			updateFragments()
-
-			// Increment Ship power
-			if ship.power < 0xFF && skipFrames(2) {
-				ship.power++
-			}
-			if safetyRecharge && ship.power > 30 {
-				safetyRecharge = false
-			}
-
-			fmt.Fprintln(powerText, ship.power)
-			powerText.Draw(win, pixel.IM.Scaled(powerText.Orig, 2))
-			powerText.Clear()
-
-			frameCount++
+			mainGame()
 		}
 
 		// Update window
@@ -145,6 +79,69 @@ func run() {
 		}
 
 	}
+}
+
+func mainGame() {
+	globalVelocity = 0
+
+	if ship.alive {
+		// Update frame's input
+		handleInput(win)
+
+		// Update ship
+		updateShip()
+
+		// Fire bullets
+		if input.shoot && skipFrames(reloadDelay) && !ship.recharge && gunCooldown == 0 {
+			if ship.power > 5 {
+				fireBullet(ship.pos)
+				ship.power -= 5
+			} else {
+				ship.recharge = true
+			}
+		}
+
+		// Shield invisibillity frames
+		if skipFrames(2) && ship.shield.prot > 0 {
+			ship.shield.prot--
+		}
+	}
+
+	// Draw stars
+	updateStars(2, 4, nil)
+
+	// Update Projectiles
+	updateProjectiles()
+
+	// Update Enemies
+	updateEnemies()
+
+	if ship.alive {
+		// Draw ship trail
+		updateShipTrail(ship.pos)
+
+		// Draw ship
+		if ship.shield.prot%5 != 1 {
+			drawShip()
+		}
+		// Draw shield
+		if ship.shield.active {
+			drawSprite(&ship.shield.sprite, ship.pos, 0, 0)
+		}
+	}
+
+	// Update Debris
+	updateFragments()
+
+	// Increment Ship power
+	if ship.power < 0xFF && skipFrames(2) {
+		ship.power++
+	}
+	if ship.recharge && ship.power > 30 {
+		ship.recharge = false
+	}
+
+	frameCount++
 }
 
 func loadStuff() {

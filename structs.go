@@ -8,16 +8,17 @@ import (
 
 // Player Structure
 type player struct {
-	pos    pixel.Vec
-	vel    pixel.Vec
-	acc    float64
-	frc    float64
-	power  uint8
-	alive  bool
-	shield shipShield
-	hitbox circularHitbox
-	sprite spriteSheet
-	frag   fragInfo
+	pos      pixel.Vec
+	vel      pixel.Vec
+	acc      float64
+	frc      float64
+	power    uint8
+	alive    bool
+	recharge bool
+	shield   shipShield
+	hitbox   circularHitbox
+	sprite   spriteSheet
+	frag     fragInfo
 }
 
 type shipShield struct {
