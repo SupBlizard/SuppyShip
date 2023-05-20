@@ -45,7 +45,7 @@ const (
 )
 
 var (
-	currentLevel   uint8
+	// currentLevel   uint8
 	globalVelocity float64    = 0
 	globalAcc      [2]float64 = [2]float64{1.4, 0.7}
 

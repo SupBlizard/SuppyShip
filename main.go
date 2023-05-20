@@ -14,10 +14,24 @@ import (
 // Core globals
 var win *pixelgl.Window = nil
 var frameCount uint16
+var state uint8
 var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 // Main
 func run() {
+	// Create new window
+	windowPointer, err := pixelgl.NewWindow(pixelgl.WindowConfig{
+		Title:  TITLE,
+		Bounds: pixel.R(0, 0, WINX, WINY),
+		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
+		VSync:  true,
+	})
+
+	win = windowPointer
+	if err != nil {
+		panic(err)
+	}
+
 	// Self explanatory
 	loadStuff()
 
@@ -36,48 +50,45 @@ func run() {
 	powerText.Color = mainColor
 	titleText.Color = mainColor
 
-	// temp add enemy asteroid for testing
-	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
-
-	// temp add enemy asteroid for testing
-	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
-
 	var (
-		paused bool
-		frames int
-		second = time.Tick(time.Second)
+		paused  bool
+		fps     uint16
+		secChan = time.Tick(time.Second)
 	)
 
 	for !win.Closed() {
 		win.Clear(color.RGBA{0, 0, 0, 0})
 
-		// Title Screen
-		if currentLevel == 0 {
-			startScreen(titleText)
-		} else if pauseButton() {
-			paused = !paused
+		switch state {
+		case 0: // Start menu
+			if startButton() {
+				state = 1
+				win.SetCursorVisible(false)
+			} else {
+				startScreen(titleText)
+			}
+		case 1: // Playing the game
+			if pauseButton() {
+				paused = !paused
+			}
+			if !paused {
+				mainGame()
+			} else {
+				pauseMenu(pauseText)
+			}
 		}
 
-		if paused {
-			pauseMenu(pauseText)
-		}
-
-		// Game handling
-		if !paused && currentLevel != 0 {
-			mainGame()
+		// Display framerate
+		fps++
+		select {
+		case <-secChan:
+			win.SetTitle(fmt.Sprintf("%s | FPS: %d", TITLE, fps))
+			fps = 0
+		default:
 		}
 
 		// Update window
 		win.Update()
-
-		frames++
-		select {
-		case <-second:
-			win.SetTitle(fmt.Sprintf("%s | FPS: %d", TITLE, frames))
-			frames = 0
-		default:
-		}
-
 	}
 }
 
@@ -145,39 +156,25 @@ func mainGame() {
 }
 
 func loadStuff() {
-	// Create new window
-	windowPointer, err := pixelgl.NewWindow(pixelgl.WindowConfig{
-		Title:  TITLE,
-		Bounds: pixel.R(0, 0, WINX, WINY),
-		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
-		VSync:  true,
-	})
-
-	win = windowPointer
-	if err != nil {
-		panic(err)
-	}
-	win.SetCursorVisible(false)
-
 	loadFragmentSprites()
 	loadStarPhases()
 	loadStarFields()
+
+	// temp add enemy asteroid for testing
+	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
+
+	// temp add enemy asteroid for testing
+	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
 }
 
 // Handle start screen
 func startScreen(titleText *text.Text) {
-	win.Clear(color.RGBA{0, 0, 0, 0})
 
 	// Draw Title
 	titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
 
 	// Draw stars
 	updateStars(0, 5, color.RGBA{0, 255, 152, 255})
-
-	// Start game
-	if startButton() {
-		currentLevel = 1
-	}
 	frameCount++
 }
 
