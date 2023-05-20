@@ -32,20 +32,22 @@ func run() {
 		panic(err)
 	}
 
-	// Self explanatory
-	loadStuff()
+	// Load things
+	loadFragmentSprites()
+	loadStarPhases()
+	loadStarFields()
 
+	// temp loading enemies (remove when levels are added)
+	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
+	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
+
+	// temp loading text fields
 	var mainColor = color.RGBA{0, 255, 152, 255}
-
 	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
 	pauseText := text.New(pixel.V(50, WINY-50), textAtlas)
 	powerText := text.New(pixel.V(50, 50), textAtlas)
-
-	// Write to text
 	fmt.Fprintln(titleText, TITLE)
 	fmt.Fprintln(pauseText, "Paused")
-
-	// Color text
 	pauseText.Color = mainColor
 	powerText.Color = mainColor
 	titleText.Color = mainColor
@@ -153,18 +155,6 @@ func mainGame() {
 	}
 
 	frameCount++
-}
-
-func loadStuff() {
-	loadFragmentSprites()
-	loadStarPhases()
-	loadStarFields()
-
-	// temp add enemy asteroid for testing
-	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
-
-	// temp add enemy asteroid for testing
-	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
 }
 
 // Handle start screen
