@@ -7,9 +7,31 @@ import (
 	"github.com/faiface/pixel"
 )
 
-// Update everything about the ship
-func updateShip() {
+var ship = player{
+	pos:  pixel.V(WINX/2, 40),
+	vel:  pixel.ZV,
+	dir:  0,
+	roll: 0,
+	acc:  1.1,
+	frc:  1 - 0.08,
 
+	power:    30,
+	recharge: false,
+	alive:    true,
+	heat:     0,
+	reload:   5,
+
+	hitbox: circularHitbox{radius: 12, offset: pixel.ZV},
+	sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
+	frag:   fragInfo{ID: 0, frags: 3, power: 0.5, radius: 5, scale: 3},
+	shield: shipShield{
+		prot:       0,
+		protLength: 60,
+		sprite:     loadSpritesheet("assets/shield.png", pixel.V(34, 34), 2, 10),
+	},
+}
+
+func updateShip() {
 	// Give velocity a minimum limit or apply friction to the velocity if there is any
 	if ship.vel.Len() <= 0.01 {
 		ship.vel = pixel.ZV
@@ -19,6 +41,9 @@ func updateShip() {
 
 	// Handle rolling after friction being applied
 	handleRolling()
+
+	// Update shield state
+	updateShield()
 
 	// Add new velocity if there is input
 	if input.dir != pixel.ZV {
@@ -47,15 +72,6 @@ func updateShip() {
 		} else if borderCollisions.X == 1 {
 			ship.vel.X += counterAcceleration * findBorderDepth(ship.pos.X, forceBorder[2])
 		}
-	}
-
-	// Check if shield is active
-	if ship.power == 0xFF {
-		ship.hitbox.radius = SHIELD_RADIUS
-		ship.shield.active = true
-	} else {
-		ship.hitbox.radius = SHIP_HITBOX
-		ship.shield.active = false
 	}
 
 	// Add new velocity to the position
@@ -88,10 +104,20 @@ func hitShip() {
 	ship.pos = pixel.V(WINX/2, -200)
 }
 
+func updateShield() {
+	if ship.power == 0xFF {
+		ship.hitbox.radius = SHIELD_RADIUS
+		ship.shield.active = true
+	} else {
+		ship.hitbox.radius = SHIP_RADIUS
+		ship.shield.active = false
+	}
+}
+
 // Draw ship to the screen
 func drawShip() {
 	var spriteID uint16 = 6
-	if currentRollCooldown == 0 {
+	if ship.roll == 0 {
 		if input.dir.Y != 0 {
 			if input.dir.Y < 0 {
 				spriteID = 5
@@ -111,11 +137,28 @@ func drawShip() {
 			}
 		}
 	} else {
-		// (rollDir*-1*4)) was the if statement for offset (offset 0 and 4)
-		spriteID = uint16(int16(currentRollCooldown/(ROLL_COOLDOWN/4))*rollDir*-1+(rollDir*4)) % ROLL_SPRITE_NUMBER
+		// (ship.dir*-1*4)) was the if statement for offset (offset 0 and 4)
+		spriteID = uint16(int16(ship.roll/(ROLL_COOLDOWN/4))*ship.dir*-1+(ship.dir*4)) % ROLL_SPRITE_NUMBER
 	}
 
 	drawSprite(&ship.sprite, ship.pos, 0, spriteID)
+}
+
+// Fire bullet
+func fireBullet(shipPos pixel.Vec) {
+	bullets := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
+
+	// Check if an Onyx bullet should be created
+	if uint16(len(bullets)) >= ONYX_CLUSTER_REQUIREMENT {
+		unloadMany(bullets)
+
+		// Spawn Onyx bullet
+		loadProjectile(1, shipPos.Add(projectileTypes[1].pos), projectileTypes[1].vel)
+		ship.heat = ONYX_COOLDOWN
+		return
+	}
+
+	loadProjectile(0, shipPos.Add(projectileTypes[0].pos), projectileTypes[0].vel)
 }
 
 func unloadTrailPart(ID int) {
@@ -135,7 +178,7 @@ func updateShipTrail(shipPos pixel.Vec) {
 			continue
 		}
 
-		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, shipTrailLength+(globalVelocity*shipTrailAcc)-ship.vel.Y))
+		shipTrail[i].pos = shipTrail[i].pos.Sub(pixel.V(0, SHIPTRAIL_LENGTH+(globalVelocity*SHIPTRAIL_ACC)-ship.vel.Y))
 		scale := 2.5 * (float64(shipTrail[i].mask.A) / 0xFF)
 
 		// Draw trail
@@ -149,16 +192,15 @@ func updateShipTrail(shipPos pixel.Vec) {
 
 func handleRolling() {
 	dir := signbit(ship.vel.X)
-	if currentRollCooldown == 0 {
+	if ship.roll == 0 {
 		if input.roll && math.Abs(ship.vel.X) > 0.5 {
-			currentRollCooldown = ROLL_COOLDOWN
-			rollDir = int16(dir)
+			ship.roll = ROLL_COOLDOWN
+			ship.dir = int16(dir)
 			ship.vel.X += 10 * dir
-
 		}
 	} else {
 		// Dampen control on the X axis
 		input.dir.X /= 2
-		currentRollCooldown--
+		ship.roll--
 	}
 }

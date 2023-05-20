@@ -14,6 +14,8 @@ import (
 // Core globals
 var win *pixelgl.Window = nil
 var frameCount uint16
+
+// var ms uint32
 var state uint8
 var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
@@ -105,7 +107,7 @@ func mainGame() {
 		updateShip()
 
 		// Fire bullets
-		if input.shoot && skipFrames(reloadDelay) && !ship.recharge && gunCooldown == 0 {
+		if input.shoot && skipFrames(ship.reload) && !ship.recharge && ship.heat == 0 {
 			if ship.power > 5 {
 				fireBullet(ship.pos)
 				ship.power -= 5

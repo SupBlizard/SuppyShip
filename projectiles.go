@@ -60,26 +60,10 @@ func unloadMany(indicies []uint16) {
 	}
 }
 
-// Fire a new bullet
-func fireBullet(shipPos pixel.Vec) {
-	// Check if an Onyx bullet should be created
-	bullets := projectilesInRadius(shipPos, ONYX_CLUSTER_RADIUS, true)
-	if uint16(len(bullets)) >= ONYX_CLUSTER_REQUIREMENT {
-		// Unload projectiles used
-		unloadMany(bullets)
-
-		// Spawn Onyx bullet
-		loadProjectile(1, shipPos.Add(projectileTypes[1].pos), projectileTypes[1].vel)
-		gunCooldown = ONYX_COOLDOWN
-	} else {
-		loadProjectile(0, shipPos.Add(projectileTypes[0].pos), projectileTypes[0].vel)
-	}
-}
-
 // Update the state of each bullet for one frame
 func updateProjectiles() {
-	if gunCooldown > 0 {
-		gunCooldown--
+	if ship.heat > 0 {
+		ship.heat--
 	}
 	if len(projectiles) == 0 {
 		return

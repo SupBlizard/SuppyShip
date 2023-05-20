@@ -6,19 +6,26 @@ import (
 	"github.com/faiface/pixel"
 )
 
-// Player Structure
 type player struct {
-	pos      pixel.Vec
-	vel      pixel.Vec
-	acc      float64
-	frc      float64
+	pos  pixel.Vec
+	vel  pixel.Vec
+	dir  int16
+	roll uint16
+	acc  float64
+	frc  float64
+
+	// attrib
 	power    uint8
-	alive    bool
 	recharge bool
-	shield   shipShield
-	hitbox   circularHitbox
-	sprite   spriteSheet
-	frag     fragInfo
+	alive    bool
+	heat     uint16
+	reload   uint16
+
+	// obj
+	hitbox circularHitbox
+	sprite spriteSheet
+	frag   fragInfo
+	shield shipShield
 }
 
 type shipShield struct {
