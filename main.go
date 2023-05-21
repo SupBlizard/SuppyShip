@@ -30,7 +30,7 @@ func run() {
 		Title:  TITLE,
 		Bounds: pixel.R(0, 0, WINX, WINY),
 		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
-		// VSync:  true,
+		VSync:  true,
 	})
 
 	win = windowPointer
@@ -65,12 +65,8 @@ func run() {
 	)
 
 	for !win.Closed() {
-		lastClock = gameClock
-		gameClock = time.Now().UnixMilli()
-		dt = float64(gameClock-lastClock) / 1000
+		clockTick()
 		// fmt.Printf("%d %d %f\n", gameClock, gameClock-lastClock, dt)
-
-		win.Clear(color.RGBA{0, 0, 0, 0})
 
 		switch state {
 		case 0: // Start menu
@@ -78,6 +74,7 @@ func run() {
 				state = 1
 				win.SetCursorVisible(false)
 			} else {
+				win.Clear(color.RGBA{0, 0, 0, 0})
 				startScreen(titleText)
 			}
 		case 1: // Playing the game
@@ -85,9 +82,13 @@ func run() {
 				paused = !paused
 			}
 			if !paused {
+				win.Clear(color.RGBA{0, 0, 0, 0})
 				mainGame()
 			} else {
 				pauseMenu(pauseText)
+
+				// Retain the time before pausing
+				gameClock = lastClock
 			}
 		}
 
@@ -103,6 +104,12 @@ func run() {
 		// Update window
 		win.Update()
 	}
+}
+
+func clockTick() {
+	lastClock = gameClock
+	gameClock = time.Now().UnixMilli()
+	dt = float64(gameClock-lastClock) / 1000
 }
 
 func mainGame() {

@@ -13,7 +13,7 @@ var enemyTypes = []enemy{
 		health:    10,
 		maxHealth: 10,
 		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
-		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 30),
+		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 400),
 		frag: fragInfo{
 			ID:     1,
 			frags:  8,
@@ -27,7 +27,7 @@ var enemyTypes = []enemy{
 		health:    10,
 		maxHealth: 10,
 		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
-		sprite:    loadSpritesheet("assets/eye-spritesheet.png", pixel.V(16, 16), 3, 30),
+		sprite:    loadSpritesheet("assets/eye-spritesheet.png", pixel.V(16, 16), 3, 400),
 		frag: fragInfo{
 			ID:     2,
 			frags:  8,

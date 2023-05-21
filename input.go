@@ -55,5 +55,5 @@ func pauseButton() bool {
 }
 
 func startButton() bool {
-	return win.JustPressed(pixelgl.KeySpace) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart)
+	return win.JustPressed(pixelgl.KeyEnter) || win.JustPressed(pixelgl.KeySpace) || win.JoystickJustPressed(pixelgl.Joystick1, pixelgl.ButtonStart)
 }
