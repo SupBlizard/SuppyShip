@@ -13,9 +13,14 @@ import (
 
 // Core globals
 var win *pixelgl.Window = nil
-var frameCount uint16
 
-// var ms uint32
+var (
+	frameCount uint16
+	gameClock  int64 = time.Now().UnixMilli()
+	lastClock  int64 = gameClock
+	dt         float64
+)
+
 var state uint8
 var textAtlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
@@ -55,12 +60,17 @@ func run() {
 	titleText.Color = mainColor
 
 	var (
-		paused  bool
 		fps     uint16
 		secChan = time.Tick(time.Second)
+		paused  bool
 	)
 
 	for !win.Closed() {
+		lastClock = gameClock
+		gameClock = time.Now().UnixMilli()
+		dt = float64(gameClock-lastClock) / 1000
+		fmt.Printf("%d %d %d %f\n", gameClock, lastClock, gameClock-lastClock, dt)
+
 		win.Clear(color.RGBA{0, 0, 0, 0})
 
 		switch state {
