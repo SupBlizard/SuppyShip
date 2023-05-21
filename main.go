@@ -15,10 +15,9 @@ import (
 var win *pixelgl.Window = nil
 
 var (
-	frameCount uint16
-	gameClock  int64 = time.Now().UnixMilli()
-	lastClock  int64 = gameClock
-	dt         float64
+	gameClock int64 = time.Now().UnixMilli()
+	lastClock int64 = gameClock
+	dt        float64
 )
 
 var state uint8
@@ -31,7 +30,7 @@ func run() {
 		Title:  TITLE,
 		Bounds: pixel.R(0, 0, WINX, WINY),
 		Icon:   []pixel.Picture{loadPicture("assets/icon.png")},
-		VSync:  true,
+		// VSync:  true,
 	})
 
 	win = windowPointer
@@ -69,7 +68,7 @@ func run() {
 		lastClock = gameClock
 		gameClock = time.Now().UnixMilli()
 		dt = float64(gameClock-lastClock) / 1000
-		fmt.Printf("%d %d %d %f\n", gameClock, lastClock, gameClock-lastClock, dt)
+		// fmt.Printf("%d %d %f\n", gameClock, gameClock-lastClock, dt)
 
 		win.Clear(color.RGBA{0, 0, 0, 0})
 
@@ -117,7 +116,7 @@ func mainGame() {
 		updateShip()
 
 		// Fire bullets
-		if input.shoot && skipFrames(ship.reload) && !ship.recharge && ship.heat == 0 {
+		if input.shoot && timePassed(ship.reload) && !ship.recharge && ship.heat == 0 {
 			if ship.power > 5 {
 				fireBullet(ship.pos)
 				ship.power -= 5
@@ -127,13 +126,13 @@ func mainGame() {
 		}
 
 		// Shield invisibillity frames
-		if skipFrames(2) && ship.shield.prot > 0 {
+		if timePassed(33) && ship.shield.prot > 0 {
 			ship.shield.prot--
 		}
 	}
 
 	// Draw stars
-	updateStars(2, 4, nil)
+	updateStars(33, 64, nil)
 
 	// Update Projectiles
 	updateProjectiles()
@@ -159,14 +158,12 @@ func mainGame() {
 	updateFragments()
 
 	// Increment Ship power
-	if ship.power < 0xFF && skipFrames(2) {
+	if ship.power < 0xFF && timePassed(33) {
 		ship.power++
 	}
 	if ship.recharge && ship.power > 30 {
 		ship.recharge = false
 	}
-
-	frameCount++
 }
 
 // Handle start screen
@@ -176,8 +173,7 @@ func startScreen(titleText *text.Text) {
 	titleText.Draw(win, pixel.IM.Scaled(titleText.Orig, 4))
 
 	// Draw stars
-	updateStars(0, 5, color.RGBA{0, 255, 152, 255})
-	frameCount++
+	updateStars(0, 64, color.RGBA{0, 255, 152, 255})
 }
 
 // Handle pause menu

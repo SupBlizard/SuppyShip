@@ -19,15 +19,15 @@ var ship = player{
 	recharge: false,
 	alive:    true,
 	heat:     0,
-	reload:   5,
+	reload:   80,
 
 	hitbox: circularHitbox{radius: 12, offset: pixel.ZV},
-	sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 7),
+	sprite: loadSpritesheet("assets/ship-spritesheet.png", pixel.V(13, 18), 3, 112),
 	frag:   fragInfo{ID: 0, frags: 3, power: 0.5, radius: 5, scale: 3},
 	shield: shipShield{
 		prot:       0,
 		protLength: 60,
-		sprite:     loadSpritesheet("assets/shield.png", pixel.V(34, 34), 2, 10),
+		sprite:     loadSpritesheet("assets/shield.png", pixel.V(34, 34), 2, 160),
 	},
 }
 

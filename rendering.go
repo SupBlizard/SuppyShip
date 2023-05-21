@@ -10,7 +10,7 @@ import (
 
 // Draw sprites
 func drawSprite(sprite *spriteSheet, pos pixel.Vec, rot float64, id uint16) {
-	if uint16(frameCount)%sprite.cycleSpeed == 0 {
+	if timePassed(sprite.cycleSpeed) {
 		sprite.cycle++
 		if sprite.cycle >= sprite.cycleNumber {
 			sprite.cycle = 0

@@ -15,7 +15,7 @@ var projectileTypes = [2]projectile{
 		friendly: true,
 		sprite: projectileSprite{
 			cycle:      0,
-			cycleSpeed: 15,
+			cycleSpeed: 240,
 			scale:      1,
 
 			pos: [PROJ_SPRITES]pixel.Rect(batchSpritePos(0, projectileSheet, projSprSize)),
@@ -29,7 +29,7 @@ var projectileTypes = [2]projectile{
 		friendly: true,
 		sprite: projectileSprite{
 			cycle:      0,
-			cycleSpeed: 15,
+			cycleSpeed: 240,
 			scale:      3,
 
 			pos: [PROJ_SPRITES]pixel.Rect(batchSpritePos(1, projectileSheet, projSprSize)),
@@ -79,7 +79,7 @@ func updateProjectiles() {
 		}
 
 		// Animation cycle speed
-		if skipFrames(projectiles[i].sprite.cycleSpeed) {
+		if timePassed(projectiles[i].sprite.cycleSpeed) {
 			if projectiles[i].sprite.cycle == 0 {
 				projectiles[i].sprite.cycle = 1
 			} else {

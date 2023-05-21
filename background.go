@@ -85,10 +85,10 @@ func updateStarPhases(stars []star) []star {
 	return stars
 }
 
-func updateStars(posRate uint16, phaseRate uint16, colorMask color.Color) {
+func updateStars(posUpdate uint16, phaseUpdate uint16, colorMask color.Color) {
 	for i := uint8(0); i < STARFIELD_NUMBER; i++ {
 		// Update starfield pos
-		if skipFrames(posRate) {
+		if timePassed(posUpdate) {
 			starfieldPos[i] = starfieldPos[i].Sub(pixel.V(0, globalVelocity*starAcc+starSpeed))
 			if starfieldPos[i].Y < WINY*-0.5 {
 				starfieldPos[i].Y = WINY * 1.5
@@ -96,6 +96,6 @@ func updateStars(posRate uint16, phaseRate uint16, colorMask color.Color) {
 		}
 
 		// Draw starfield
-		starFields[i][(frameCount/phaseRate)%uint16(STAR_PHASES)].DrawColorMask(win, pixel.IM.Moved(starfieldPos[i]), colorMask)
+		starFields[i][(uint16(gameClock)/phaseUpdate)%uint16(STAR_PHASES)].DrawColorMask(win, pixel.IM.Moved(starfieldPos[i]), colorMask)
 	}
 }
