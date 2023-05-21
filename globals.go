@@ -88,19 +88,20 @@ var (
 	starAcc   float64 = 5
 )
 
+// Return true when frameCount is a multiple of x
+func timePassed(timing uint16) bool {
+	if timing == 0 {
+		return false
+	}
+	var x int64 = int64(timing)
+	return gameClock/x != lastClock/x
+}
+
 // Calculate how far into the border something is
 func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/borderRange }
 
 // Return 1 or -1 for the signbit
 func signbit(x float64) float64 { return x / math.Abs(x) }
-
-// Return true when frameCount is a multiple of x
-func skipFrames(x uint16) bool {
-	if x == 0 {
-		return false
-	}
-	return frameCount%x == 0
-}
 
 // Return a random vector
 func randomVector(limit int32) pixel.Vec {
