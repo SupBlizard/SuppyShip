@@ -12,6 +12,9 @@ const (
 	WINX  float64 = 512
 	WINY  float64 = 768
 
+	// Target FPS before converting timing
+	DT_OFFSET = 60
+
 	REVOLUTION float64 = math.Pi * 2
 
 	BOUNDARY_STRENGTH float64 = 2
@@ -97,9 +100,9 @@ func timePassed(timing uint16) bool {
 	return gameClock/x != lastClock/x
 }
 
-func timer(started uint32, length uint16) bool {
-	return int64(started)+int64(length) > gameClock
-}
+// func timer(started uint32, length uint16) bool {
+// 	return int64(started)+int64(length) > gameClock
+// }
 
 // Calculate how far into the border something is
 func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/borderRange }

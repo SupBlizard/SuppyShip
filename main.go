@@ -44,7 +44,7 @@ func run() {
 	loadStarFields()
 
 	// temp loading enemies (remove when levels are added)
-	loadEnemy(0, pixel.V(0, WINY), pixel.V(1, -1))
+	loadEnemy(0, pixel.V(0, WINY), pixel.V(60, -60))
 	loadEnemy(1, pixel.V(200, 400), pixel.ZV)
 
 	// temp loading text fields

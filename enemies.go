@@ -9,32 +9,23 @@ import (
 var enemyTypes = []enemy{
 	{
 		id:        0,
-		rotVel:    0.01,
+		rot:       0,
+		rotVel:    0.6,
 		health:    10,
 		maxHealth: 10,
 		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
 		sprite:    loadSpritesheet("assets/asteroid-spritesheet.png", pixel.V(16, 16), 3, 400),
-		frag: fragInfo{
-			ID:     1,
-			frags:  8,
-			power:  2,
-			radius: 15,
-			scale:  3,
-		},
+		frag:      fragInfo{ID: 1, frags: 8, power: 2, radius: 15, scale: 3},
 	},
 	{
 		id:        1,
+		rot:       0,
+		rotVel:    0,
 		health:    10,
 		maxHealth: 10,
 		hitbox:    circularHitbox{radius: 25, offset: pixel.ZV},
 		sprite:    loadSpritesheet("assets/eye-spritesheet.png", pixel.V(16, 16), 3, 400),
-		frag: fragInfo{
-			ID:     2,
-			frags:  8,
-			power:  2,
-			radius: 15,
-			scale:  3,
-		},
+		frag:      fragInfo{ID: 2, frags: 8, power: 2, radius: 15, scale: 3},
 	},
 }
 
@@ -97,8 +88,8 @@ func updateEnemies() {
 			enemies[i].health -= damage
 		}
 
-		// Add enermy rotation
-		enemies[i].rot += enemies[i].rotVel
+		// Add enemy rotation
+		enemies[i].rot += enemies[i].rotVel * dt
 
 		// Process custom enemy code
 		switch enemies[i].id {
@@ -114,7 +105,7 @@ func updateEnemies() {
 func asteroid(enemyID uint16) {
 	var ast *enemy = &enemies[enemyID]
 
-	ast.pos = ast.pos.Add(ast.vel)
+	ast.pos = ast.pos.Add(ast.vel.Scaled(dt))
 
 	drawSprite(&ast.sprite, ast.pos, ast.rot, uint16(
 		math.Round(divFloat(ast.health, ast.maxHealth)*float64(len(ast.sprite.sheet)/int(ast.sprite.cycleNumber)-1))))
@@ -123,10 +114,11 @@ func asteroid(enemyID uint16) {
 func eye(enemyID uint16) {
 	var eye *enemy = &enemies[enemyID]
 
-	eye.pos = eye.pos.Add(eye.vel)
+	eye.pos = eye.pos.Add(eye.vel.Scaled(dt))
 
+	// Really need to fix that rotation issue
 	sightAngle := eye.pos.To(ship.pos).Angle()
-	eye.rotVel = (sightAngle - eye.rot)
+	eye.rotVel = (sightAngle - eye.rot) * DT_OFFSET
 	// if (sightAngle - eye.rot) < AXIS_DEADZONE {
 	// 	eye.rotVel = (sightAngle - eye.rot)
 	// }
