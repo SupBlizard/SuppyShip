@@ -89,6 +89,7 @@ type fragInfo struct {
 // Background star Structure
 type star struct {
 	pos   pixel.Vec
+	scale float64
 	phase int8
 	shine int8
 }

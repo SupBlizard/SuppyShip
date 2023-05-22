@@ -51,11 +51,10 @@ func generateStars() []star {
 				continue
 			}
 
-			rnd := int8(rand.Int() % 6)
-
 			stars = append(stars, star{
 				pos:   randomPos,
-				phase: rnd,
+				scale: rand.Float64()*2 + 1,
+				phase: int8(rand.Int() % 6),
 				shine: 1,
 			})
 		}
@@ -66,7 +65,7 @@ func generateStars() []star {
 func renderStars(stars []star) *pixel.Sprite {
 	starfield := pixelgl.NewCanvas(pixel.R(0, 0, WINX, WINY))
 	for _, cStar := range stars {
-		starSprites[cStar.phase].Draw(starfield, pixel.IM.Scaled(pixel.ZV, 2).Moved(cStar.pos))
+		starSprites[cStar.phase].Draw(starfield, pixel.IM.Scaled(pixel.ZV, cStar.scale).Moved(cStar.pos))
 	}
 
 	return pixel.NewSprite(starfield, starfield.Bounds())
