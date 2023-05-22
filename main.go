@@ -52,16 +52,16 @@ func run() {
 	titleText := text.New(pixel.V(50, WINY-100), textAtlas)
 	pauseText := text.New(pixel.V(50, WINY-50), textAtlas)
 	powerText := text.New(pixel.V(50, 50), textAtlas)
-	fmt.Fprintln(titleText, TITLE)
-	fmt.Fprintln(pauseText, "Paused")
 	pauseText.Color = mainColor
 	powerText.Color = mainColor
 	titleText.Color = mainColor
 
+	fmt.Fprintln(titleText, TITLE)
+	fmt.Fprintln(pauseText, "Paused")
+
 	var (
-		fps     uint16
-		secChan = time.Tick(time.Second)
-		paused  bool
+		fps    uint16
+		paused bool
 	)
 
 	for !win.Closed() {
@@ -92,13 +92,11 @@ func run() {
 			}
 		}
 
-		// Display framerate
+		// Calculate framerate
 		fps++
-		select {
-		case <-secChan:
+		if timePassed(1000) {
 			win.SetTitle(fmt.Sprintf("%s | FPS: %d", TITLE, fps))
 			fps = 0
-		default:
 		}
 
 		// Update window

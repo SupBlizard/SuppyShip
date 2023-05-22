@@ -97,6 +97,10 @@ func timePassed(timing uint16) bool {
 	return gameClock/x != lastClock/x
 }
 
+func timer(started uint32, length uint16) bool {
+	return int64(started)+int64(length) > gameClock
+}
+
 // Calculate how far into the border something is
 func findBorderDepth(pos float64, borderRange float64) float64 { return 1 - pos/borderRange }
 
